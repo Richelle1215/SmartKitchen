@@ -8,6 +8,8 @@ use App\Http\Controllers\CommentController;
 use App\Http\Controllers\LikeController;
 use App\Http\Controllers\FavoriteController;
 use App\Http\Controllers\FollowController;
+use App\Http\Controllers\AIAssistantController;
+use App\Http\Controllers\PantryController;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Route;
 
@@ -89,6 +91,24 @@ Route::middleware('auth')->group(function () {
 
     // Recommendations (personalized discovery)
     Route::get('/recommendations', [SearchController::class, 'recommendations'])->name('search.recommendations');
+
+    // AI Cooking Assistant
+    Route::get('/ai-assistant', [AIAssistantController::class, 'index'])->name('ai.assistant');
+    Route::post('/ai/chat', [AIAssistantController::class, 'chat'])->name('ai.chat');
+    Route::post('/ai/substitutions', [AIAssistantController::class, 'getSubstitutions'])->name('ai.substitutions');
+    Route::post('/ai/tips', [AIAssistantController::class, 'getTips'])->name('ai.tips');
+    Route::post('/ai/nutrition', [AIAssistantController::class, 'getNutritionInfo'])->name('ai.nutrition');
+    Route::get('/ai/suggest-recipes', [AIAssistantController::class, 'suggestRecipes'])->name('ai.suggest-recipes');
+
+    // Smart Pantry
+    Route::get('/pantry', [PantryController::class, 'index'])->name('pantry.index');
+    Route::post('/pantry', [PantryController::class, 'store'])->name('pantry.store');
+    Route::patch('/pantry/{item}', [PantryController::class, 'update'])->name('pantry.update');
+    Route::delete('/pantry/{item}', [PantryController::class, 'destroy'])->name('pantry.destroy');
+    Route::patch('/pantry/{item}/quantity', [PantryController::class, 'updateQuantity'])->name('pantry.update-quantity');
+    Route::get('/pantry/low-stock', [PantryController::class, 'lowStock'])->name('pantry.low-stock');
+    Route::get('/pantry/expired', [PantryController::class, 'expired'])->name('pantry.expired');
+    Route::get('/pantry/suggest-recipes', [PantryController::class, 'suggestRecipes'])->name('pantry.suggest-recipes');
 });
 
 require __DIR__.'/auth.php';
