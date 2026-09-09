@@ -15,6 +15,8 @@ use App\Http\Controllers\CostCalculatorController;
 use App\Http\Controllers\VideoShortController;
 use App\Http\Controllers\MessageController;
 use App\Http\Controllers\AchievementController;
+use App\Http\Controllers\AdminController;
+use App\Http\Controllers\ReportController;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Route;
 
@@ -159,6 +161,40 @@ Route::middleware('auth')->group(function () {
     Route::get('/achievements/all', [AchievementController::class, 'all'])->name('achievements.all');
     Route::post('/achievements/award', [AchievementController::class, 'award'])->name('achievements.award');
     Route::get('/achievements/stats', [AchievementController::class, 'stats'])->name('achievements.stats');
+
+    // Reports
+    Route::get('/report/create', [ReportController::class, 'create'])->name('reports.create');
+    Route::post('/report', [ReportController::class, 'store'])->name('reports.store');
+    Route::get('/report/statistics', [ReportController::class, 'statistics'])->name('reports.statistics');
+});
+
+// Admin Routes
+Route::middleware(['auth', 'admin'])->prefix('admin')->group(function () {
+    Route::get('/dashboard', [AdminController::class, 'dashboard'])->name('admin.dashboard');
+    
+    // User Management
+    Route::get('/users', [AdminController::class, 'users'])->name('admin.users');
+    Route::get('/users/{user}', [AdminController::class, 'showUser'])->name('admin.user-details');
+    Route::post('/users/{user}/suspend', [AdminController::class, 'suspendUser'])->name('admin.suspend-user');
+    Route::post('/users/{user}/unsuspend', [AdminController::class, 'unsuspendUser'])->name('admin.unsuspend-user');
+    Route::delete('/users/{user}', [AdminController::class, 'deleteUser'])->name('admin.delete-user');
+    
+    // Recipe Management
+    Route::get('/recipes', [AdminController::class, 'recipes'])->name('admin.recipes');
+    Route::get('/recipes/{recipe}', [AdminController::class, 'showRecipe'])->name('admin.recipe-details');
+    Route::post('/recipes/{recipe}/toggle', [AdminController::class, 'toggleRecipeStatus'])->name('admin.toggle-recipe');
+    Route::delete('/recipes/{recipe}', [AdminController::class, 'deleteRecipe'])->name('admin.delete-recipe');
+    
+    // Reports Management
+    Route::get('/reports', [AdminController::class, 'reports'])->name('admin.reports');
+    Route::get('/reports/{report}', [AdminController::class, 'showReport'])->name('admin.report-details');
+    Route::post('/reports/{report}/resolve', [AdminController::class, 'resolveReport'])->name('admin.resolve-report');
+    
+    // Statistics
+    Route::get('/statistics', [AdminController::class, 'statistics'])->name('admin.statistics');
+    
+    // Activity Logs
+    Route::get('/activity-logs', [AdminController::class, 'activityLogs'])->name('admin.activity-logs');
 });
 
 require __DIR__.'/auth.php';
