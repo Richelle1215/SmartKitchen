@@ -9,9 +9,25 @@ use Illuminate\View\View;
 
 class RecipeController extends Controller
 {
-    public function index(): View
+    public function index(Request $request): View
     {
-        $recipes = Recipe::with('user')->latest()->get();
+        $query = Recipe::query()->with('user')->where('is_public', true);
+
+        if ($request->filled('search')) {
+            $search = trim($request->input('search'));
+
+            $query->where(function ($q) use ($search) {
+                $q->where('title', 'like', "%{$search}%")
+                    ->orWhere('description', 'like', "%{$search}%")
+                    ->orWhere('ingredients', 'like', "%{$search}%");
+            });
+        }
+
+        if ($request->filled('category')) {
+            $query->where('category', $request->input('category'));
+        }
+
+        $recipes = $query->latest()->get();
 
         return view('recipes.index', compact('recipes'));
     }

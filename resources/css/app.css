@@ -1,9 +1,88 @@
-@import 'tailwindcss';
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
 
-@source '../../vendor/laravel/framework/src/Illuminate/Pagination/resources/views/*.blade.php';
-@source '../../storage/framework/views/*.php';
+@layer components {
+    .smart-auth-shell {
+        @apply min-h-screen flex flex-col items-center justify-center bg-[#f2f2f1] px-4 py-8 text-[#2f3d4b];
+    }
 
-@theme {
-    --font-sans: 'Instrument Sans', ui-sans-serif, system-ui, sans-serif, 'Apple Color Emoji', 'Segoe UI Emoji',
-        'Segoe UI Symbol', 'Noto Color Emoji';
+    .smart-auth-brand {
+        @apply mb-12 flex items-center justify-center;
+    }
+
+    .smart-auth-mark {
+        position: relative;
+        width: 300px;
+        height: 300px;
+        background: #05070a;
+        border-radius: 0;
+        box-shadow: inset 0 0 0 1px rgba(255, 255, 255, 0.04);
+    }
+
+    .smart-auth-mark::before {
+        content: "";
+        position: absolute;
+        inset: 0;
+        background: #05070a;
+        clip-path: polygon(0 0, 66% 0, 66% 24%, 38% 24%, 38% 100%, 0 100%);
+    }
+
+    .smart-auth-mark::after {
+        content: "";
+        position: absolute;
+        inset: 0;
+        background: #f2f2f1;
+        clip-path: polygon(58% 0, 100% 0, 100% 100%, 40% 100%, 40% 76%, 58% 76%);
+    }
+
+    .smart-auth-card {
+        @apply w-full max-w-[560px];
+    }
+
+    .smart-auth-form {
+        @apply space-y-5;
+    }
+
+    .smart-auth-field {
+        @apply space-y-2;
+    }
+
+    .smart-auth-label {
+        @apply block text-[15px] font-normal text-[#2d3a49];
+    }
+
+    .smart-auth-input {
+        @apply w-full border border-[#a8aeaf] bg-white px-3 py-2 text-base text-[#1f2a35] shadow-none outline-none transition duration-150 ease-in-out focus:border-[#7d8b99] focus:ring-0;
+        border-radius: 0;
+    }
+
+    .smart-auth-error {
+        @apply mt-1 text-sm text-red-600;
+    }
+
+    .smart-auth-meta {
+        @apply flex items-center justify-between pt-1;
+    }
+
+    .smart-auth-remember {
+        @apply inline-flex items-center gap-3 text-[15px] text-[#2d3a49];
+    }
+
+    .smart-auth-checkbox {
+        @apply h-4 w-4 appearance-none rounded-none border border-[#8a9096] bg-white checked:bg-[#1f2a35] checked:border-[#1f2a35];
+    }
+
+    .smart-auth-actions {
+        @apply flex items-center justify-between gap-4 pt-2;
+    }
+
+    .smart-auth-link {
+        @apply text-[15px] text-[#2d3a49] underline-offset-4 transition hover:text-[#1a2737];
+    }
+
+    .smart-auth-button {
+        @apply inline-flex items-center justify-center rounded-md bg-[#1d2f3f] px-6 py-3 text-sm font-bold uppercase tracking-[0.04em] text-white transition hover:bg-[#172a3b];
+        min-width: 120px;
+    }
 }

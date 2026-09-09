@@ -25,6 +25,21 @@
             </div>
         @endif
 
+        <section class="mb-8 bg-white rounded-2xl border border-stone-200 p-5 shadow-sm">
+            <form method="GET" action="{{ route('recipes.index') }}" class="grid gap-4 md:grid-cols-[minmax(0,1fr)_220px_auto]">
+                <input type="text" name="search" value="{{ request('search') }}" placeholder="Search recipes or ingredients" class="w-full border border-stone-300 rounded-xl px-3 py-2.5 focus:outline-none focus:ring-2 focus:ring-orange-200">
+
+                <select name="category" class="border border-stone-300 rounded-xl px-3 py-2.5 focus:outline-none focus:ring-2 focus:ring-orange-200">
+                    <option value="">All categories</option>
+                    @foreach(['Breakfast','Lunch','Dinner','Dessert','Snacks','Beverages'] as $option)
+                        <option value="{{ $option }}" {{ request('category') === $option ? 'selected' : '' }}>{{ $option }}</option>
+                    @endforeach
+                </select>
+
+                <button type="submit" class="bg-orange-500 text-white px-5 py-2.5 rounded-xl font-semibold hover:bg-orange-600">Filter</button>
+            </form>
+        </section>
+
         <section class="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
             @forelse ($recipes as $recipe)
                 <article class="bg-white rounded-2xl shadow-sm border border-stone-200 overflow-hidden">
@@ -46,7 +61,7 @@
                 </article>
             @empty
                 <div class="col-span-full bg-white rounded-2xl border border-dashed border-stone-300 p-10 text-center text-stone-600">
-                    No recipes yet. Be the first to share one.
+                    No recipes match your search yet. Try another ingredient or category.
                 </div>
             @endforelse
         </section>

@@ -18,7 +18,19 @@
             </div>
             <nav class="flex gap-3 items-center">
                 <a href="/recipes" class="px-4 py-2 hover:bg-stone-200 rounded-full">Recipes</a>
-                <a href="/recipes/create" class="bg-orange-500 text-white px-4 py-2 rounded-full hover:bg-orange-600">Create Recipe</a>
+
+                @auth
+                    <a href="{{ url('/dashboard') }}" class="px-4 py-2 hover:bg-stone-200 rounded-full">Dashboard</a>
+                    <form method="POST" action="{{ route('logout') }}">
+                        @csrf
+                        <button type="submit" class="bg-stone-900 text-white px-4 py-2 rounded-full hover:bg-stone-700">
+                            Log Out
+                        </button>
+                    </form>
+                @else
+                    <a href="{{ route('login') }}" class="px-4 py-2 hover:bg-stone-200 rounded-full">Sign In</a>
+                    <a href="{{ route('register') }}" class="bg-orange-500 text-white px-4 py-2 rounded-full hover:bg-orange-600">Sign Up</a>
+                @endauth
             </nav>
         </header>
 
