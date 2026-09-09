@@ -7,11 +7,15 @@ use App\Models\Comment;
 use App\Models\Rating;
 use App\Models\PantryItem;
 use App\Models\MealPlan;
+use App\Models\VideoShort;
+use App\Models\Message;
 use App\Policies\RecipePolicy;
 use App\Policies\CommentPolicy;
 use App\Policies\RatingPolicy;
 use App\Policies\PantryItemPolicy;
 use App\Policies\MealPlanPolicy;
+use App\Policies\VideoShortPolicy;
+use App\Policies\MessagePolicy;
 use Illuminate\Support\ServiceProvider;
 use Illuminate\Support\Facades\Gate;
 
@@ -44,5 +48,7 @@ class AppServiceProvider extends ServiceProvider
         Gate::policy(Rating::class, RatingPolicy::class);
         Gate::policy(PantryItem::class, PantryItemPolicy::class);
         Gate::policy(MealPlan::class, MealPlanPolicy::class);
+        Gate::policy(VideoShort::class, VideoShortPolicy::class);
+        Gate::policy(Message::class, MessagePolicy::class);
     }
 }

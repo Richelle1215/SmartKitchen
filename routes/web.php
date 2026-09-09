@@ -12,6 +12,9 @@ use App\Http\Controllers\AIAssistantController;
 use App\Http\Controllers\PantryController;
 use App\Http\Controllers\MealPlanController;
 use App\Http\Controllers\CostCalculatorController;
+use App\Http\Controllers\VideoShortController;
+use App\Http\Controllers\MessageController;
+use App\Http\Controllers\AchievementController;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Route;
 
@@ -129,6 +132,33 @@ Route::middleware('auth')->group(function () {
     Route::get('/cost-calculator', [CostCalculatorController::class, 'index'])->name('cost-calculator.index');
     Route::post('/cost-calculator/calculate', [CostCalculatorController::class, 'calculate'])->name('cost-calculator.calculate');
     Route::get('/recipes/{recipe}/cost', [CostCalculatorController::class, 'recipeCost'])->name('recipes.cost');
+
+    // Video Shorts
+    Route::get('/shorts', [VideoShortController::class, 'index'])->name('video-shorts.index');
+    Route::get('/shorts/create', [VideoShortController::class, 'create'])->name('video-shorts.create');
+    Route::post('/shorts', [VideoShortController::class, 'store'])->name('video-shorts.store');
+    Route::get('/shorts/{short}', [VideoShortController::class, 'show'])->name('video-shorts.show');
+    Route::delete('/shorts/{short}', [VideoShortController::class, 'destroy'])->name('video-shorts.destroy');
+    Route::post('/shorts/{short}/like', [VideoShortController::class, 'toggleLike'])->name('video-shorts.like');
+    Route::post('/shorts/{short}/comment', [VideoShortController::class, 'addComment'])->name('video-shorts.comment');
+    Route::get('/shorts/trending/all', [VideoShortController::class, 'trending'])->name('video-shorts.trending');
+    Route::get('/shorts/search', [VideoShortController::class, 'search'])->name('video-shorts.search');
+
+    // Messaging
+    Route::get('/messages', [MessageController::class, 'index'])->name('messages.index');
+    Route::get('/messages/{user}', [MessageController::class, 'show'])->name('messages.show');
+    Route::post('/messages/{user}', [MessageController::class, 'store'])->name('messages.store');
+    Route::delete('/messages/{message}', [MessageController::class, 'destroy'])->name('messages.destroy');
+    Route::get('/messages/unread/count', [MessageController::class, 'unreadCount'])->name('messages.unread-count');
+    Route::post('/messages/{user}/mark-as-read', [MessageController::class, 'markAsRead'])->name('messages.mark-as-read');
+    Route::get('/messages/search', [MessageController::class, 'search'])->name('messages.search');
+
+    // Achievements
+    Route::get('/achievements', [AchievementController::class, 'index'])->name('achievements.index');
+    Route::get('/achievements/leaderboard', [AchievementController::class, 'leaderboard'])->name('achievements.leaderboard');
+    Route::get('/achievements/all', [AchievementController::class, 'all'])->name('achievements.all');
+    Route::post('/achievements/award', [AchievementController::class, 'award'])->name('achievements.award');
+    Route::get('/achievements/stats', [AchievementController::class, 'stats'])->name('achievements.stats');
 });
 
 require __DIR__.'/auth.php';
