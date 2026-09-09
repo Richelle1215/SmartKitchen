@@ -2,6 +2,11 @@
 
 use App\Http\Controllers\ProfileController;
 use App\Http\Controllers\RecipeController;
+use App\Http\Controllers\RatingController;
+use App\Http\Controllers\CommentController;
+use App\Http\Controllers\LikeController;
+use App\Http\Controllers\FavoriteController;
+use App\Http\Controllers\FollowController;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Route;
 
@@ -50,6 +55,30 @@ Route::middleware('auth')->group(function () {
     Route::patch('/recipes/{recipe}', [RecipeController::class, 'update'])->name('recipes.update');
     Route::delete('/recipes/{recipe}', [RecipeController::class, 'destroy'])->name('recipes.destroy');
     Route::get('/my-recipes', [RecipeController::class, 'myRecipes'])->name('recipes.my-recipes');
+
+    // Community features - Ratings
+    Route::post('/recipes/{recipe}/rate', [RatingController::class, 'store'])->name('recipes.rate');
+    Route::delete('/recipes/{recipe}/ratings/{rating}', [RatingController::class, 'destroy'])->name('ratings.destroy');
+
+    // Community features - Comments
+    Route::post('/recipes/{recipe}/comments', [CommentController::class, 'store'])->name('comments.store');
+    Route::patch('/comments/{comment}', [CommentController::class, 'update'])->name('comments.update');
+    Route::delete('/comments/{comment}', [CommentController::class, 'destroy'])->name('comments.destroy');
+
+    // Community features - Likes
+    Route::post('/recipes/{recipe}/like', [LikeController::class, 'store'])->name('recipes.like');
+    Route::get('/recipes/{recipe}/likes/count', [LikeController::class, 'count'])->name('recipes.likes-count');
+
+    // Community features - Favorites
+    Route::get('/favorites', [FavoriteController::class, 'index'])->name('favorites.index');
+    Route::post('/recipes/{recipe}/favorite', [FavoriteController::class, 'store'])->name('recipes.favorite');
+    Route::delete('/recipes/{recipe}/favorite', [FavoriteController::class, 'destroy'])->name('favorites.destroy');
+
+    // Community features - Follow
+    Route::post('/users/{user}/follow', [FollowController::class, 'store'])->name('users.follow');
+    Route::get('/users/{user}/followers', [FollowController::class, 'followers'])->name('users.followers');
+    Route::get('/users/{user}/following', [FollowController::class, 'following'])->name('users.following');
+    Route::get('/users/{user}/follow-status', [FollowController::class, 'status'])->name('users.follow-status');
 });
 
 require __DIR__.'/auth.php';
