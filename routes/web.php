@@ -2,6 +2,7 @@
 
 use App\Http\Controllers\ProfileController;
 use App\Http\Controllers\RecipeController;
+use App\Http\Controllers\SearchController;
 use App\Http\Controllers\RatingController;
 use App\Http\Controllers\CommentController;
 use App\Http\Controllers\LikeController;
@@ -15,7 +16,13 @@ Route::get('/', function () {
     return view('home');
 })->name('home');
 
-// Recipe browsing (public)
+// Search and Discovery (public)
+Route::get('/search', [SearchController::class, 'index'])->name('search.index');
+Route::get('/search/by-ingredients', [SearchController::class, 'byIngredients'])->name('search.by-ingredients');
+Route::get('/search/trending', [SearchController::class, 'trending'])->name('search.trending');
+Route::get('/search/popular', [SearchController::class, 'popular'])->name('search.popular');
+Route::get('/search/recent', [SearchController::class, 'recent'])->name('search.recent');
+Route::get('/categories/{category}', [SearchController::class, 'category'])->name('categories.show');
 Route::get('/recipes', [RecipeController::class, 'index'])->name('recipes.index');
 Route::get('/recipes/{recipe}', [RecipeController::class, 'show'])->name('recipes.show');
 Route::get('/recipes/user/{userId}', [RecipeController::class, 'userRecipes'])->name('recipes.user-recipes');
@@ -79,6 +86,9 @@ Route::middleware('auth')->group(function () {
     Route::get('/users/{user}/followers', [FollowController::class, 'followers'])->name('users.followers');
     Route::get('/users/{user}/following', [FollowController::class, 'following'])->name('users.following');
     Route::get('/users/{user}/follow-status', [FollowController::class, 'status'])->name('users.follow-status');
+
+    // Recommendations (personalized discovery)
+    Route::get('/recommendations', [SearchController::class, 'recommendations'])->name('search.recommendations');
 });
 
 require __DIR__.'/auth.php';
