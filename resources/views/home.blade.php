@@ -8,7 +8,7 @@
 </head>
 <body class="bg-stone-100 text-stone-900">
     <div class="max-w-7xl mx-auto px-4 py-8">
-        <header class="flex justify-between items-center py-4">
+        <header class="flex justify-between items-center py-4 gap-6">
             <div class="flex items-center gap-3">
                 <div class="w-10 h-10 rounded-full bg-orange-500 text-white font-bold flex items-center justify-center">SK</div>
                 <div>
@@ -16,11 +16,18 @@
                     <div class="text-xs uppercase tracking-[0.22em] text-stone-500">AI-powered recipe community</div>
                 </div>
             </div>
-            <nav class="flex gap-3 items-center">
-                <a href="/recipes" class="px-4 py-2 hover:bg-stone-200 rounded-full">Recipes</a>
 
+            <nav class="hidden lg:flex items-center gap-2 text-sm text-stone-600">
+                <a href="#features" class="px-3 py-2 rounded-full hover:bg-stone-200 hover:text-stone-900">Features</a>
+                <a href="#pantry" class="px-3 py-2 rounded-full hover:bg-stone-200 hover:text-stone-900">Pantry</a>
+                <a href="#planner" class="px-3 py-2 rounded-full hover:bg-stone-200 hover:text-stone-900">Meal Planner</a>
+                <a href="#assistant" class="px-3 py-2 rounded-full hover:bg-stone-200 hover:text-stone-900">AI Assistant</a>
+                <a href="#community" class="px-3 py-2 rounded-full hover:bg-stone-200 hover:text-stone-900">Community</a>
+            </nav>
+
+            <div class="flex items-center gap-3">
                 @auth
-                    <a href="{{ url('/dashboard') }}" class="px-4 py-2 hover:bg-stone-200 rounded-full">Dashboard</a>
+                    <a href="{{ route('dashboard') }}" class="px-4 py-2 hover:bg-stone-200 rounded-full">Dashboard</a>
                     <form method="POST" action="{{ route('logout') }}">
                         @csrf
                         <button type="submit" class="bg-stone-900 text-white px-4 py-2 rounded-full hover:bg-stone-700">
@@ -31,7 +38,7 @@
                     <a href="{{ route('login') }}" class="px-4 py-2 hover:bg-stone-200 rounded-full">Sign In</a>
                     <a href="{{ route('register') }}" class="bg-orange-500 text-white px-4 py-2 rounded-full hover:bg-orange-600">Sign Up</a>
                 @endauth
-            </nav>
+            </div>
         </header>
 
         <main class="mt-8 grid lg:grid-cols-[1.2fr_0.8fr] gap-8 items-center">
@@ -39,11 +46,15 @@
                 <span class="inline-block mb-4 bg-orange-100 text-orange-700 px-3 py-1 rounded-full text-xs font-semibold uppercase tracking-[0.2em]">Fresh ideas every day</span>
                 <h1 class="text-5xl font-black leading-tight mb-4">Cook smarter with <span class="text-orange-600">SmartKitchen</span></h1>
                 <p class="text-xl text-stone-600 mb-8 max-w-xl">
-                    Discover recipes, save favorites, get AI-powered cooking guidance, and connect with food lovers who love sharing practical, delicious ideas.
+                    Discover recipes, plan balanced meals, get AI-powered cooking help, and connect with food lovers who share practical, delicious ideas.
                 </p>
                 <div class="flex gap-4 flex-wrap">
-                    <a href="/recipes" class="bg-orange-500 text-white px-6 py-3 rounded-full font-semibold hover:bg-orange-600">Explore Recipes</a>
-                    <a href="/recipes/create" class="bg-white border border-stone-200 px-6 py-3 rounded-full font-semibold hover:bg-stone-50">Share a Recipe</a>
+                    <a href="{{ route('recipes.index') }}" class="bg-orange-500 text-white px-6 py-3 rounded-full font-semibold hover:bg-orange-600">Explore Recipes</a>
+                    @auth
+                        <a href="{{ route('recipes.create') }}" class="bg-white border border-stone-200 px-6 py-3 rounded-full font-semibold hover:bg-stone-50">Share a Recipe</a>
+                    @else
+                        <a href="{{ route('login') }}" class="bg-white border border-stone-200 px-6 py-3 rounded-full font-semibold hover:bg-stone-50">Share a Recipe</a>
+                    @endauth
                 </div>
 
                 <div class="mt-10 grid sm:grid-cols-3 gap-4">
@@ -86,6 +97,84 @@
                 </div>
             </aside>
         </main>
+
+        <section id="features" class="mt-20">
+            <div class="flex items-center justify-between mb-8">
+                <div>
+                    <p class="text-sm uppercase tracking-[0.2em] text-orange-600 font-semibold">Everything you need</p>
+                    <h2 class="text-3xl font-bold">Built for everyday cooking</h2>
+                </div>
+                <a href="{{ route('recipes.index') }}" class="hidden md:inline-flex items-center gap-2 text-sm font-medium text-stone-700 hover:text-stone-900">
+                    Browse all recipes
+                    <span aria-hidden="true">→</span>
+                </a>
+            </div>
+
+            <div class="grid md:grid-cols-2 xl:grid-cols-3 gap-6">
+                <a href="{{ route('recipes.index') }}#pantry" id="pantry" class="block rounded-3xl border border-stone-200 bg-white p-6 shadow-sm hover:-translate-y-1 hover:shadow-md transition">
+                    <div class="mb-4 flex h-12 w-12 items-center justify-center rounded-2xl bg-orange-100 text-2xl">🥬</div>
+                    <h3 class="text-xl font-bold mb-2">Smart Pantry</h3>
+                    <p class="text-stone-600">Track ingredients, spot missing items, and turn what you have into meals you can cook tonight.</p>
+                </a>
+
+                <a href="{{ route('recipes.index') }}#planner" id="planner" class="block rounded-3xl border border-stone-200 bg-white p-6 shadow-sm hover:-translate-y-1 hover:shadow-md transition">
+                    <div class="mb-4 flex h-12 w-12 items-center justify-center rounded-2xl bg-amber-100 text-2xl">📅</div>
+                    <h3 class="text-xl font-bold mb-2">Meal Planner</h3>
+                    <p class="text-stone-600">Organize weekly meals, plan prep sessions, and keep your kitchen routine simple and consistent.</p>
+                </a>
+
+                <a href="{{ route('recipes.index') }}#assistant" id="assistant" class="block rounded-3xl border border-stone-200 bg-white p-6 shadow-sm hover:-translate-y-1 hover:shadow-md transition">
+                    <div class="mb-4 flex h-12 w-12 items-center justify-center rounded-2xl bg-emerald-100 text-2xl">🤖</div>
+                    <h3 class="text-xl font-bold mb-2">AI Assistant</h3>
+                    <p class="text-stone-600">Get recipe suggestions, substitutions, and cooking help tailored to what you have right now.</p>
+                </a>
+
+                <a href="{{ route('recipes.index') }}#nutrition" id="nutrition" class="block rounded-3xl border border-stone-200 bg-white p-6 shadow-sm hover:-translate-y-1 hover:shadow-md transition">
+                    <div class="mb-4 flex h-12 w-12 items-center justify-center rounded-2xl bg-lime-100 text-2xl">📊</div>
+                    <h3 class="text-xl font-bold mb-2">Nutrition Analysis</h3>
+                    <p class="text-stone-600">Review calories, macros, and healthier recipe swaps without overcomplicating meal prep.</p>
+                </a>
+
+                <a href="{{ route('recipes.index') }}#community" id="community" class="block rounded-3xl border border-stone-200 bg-white p-6 shadow-sm hover:-translate-y-1 hover:shadow-md transition">
+                    <div class="mb-4 flex h-12 w-12 items-center justify-center rounded-2xl bg-violet-100 text-2xl">👨‍🍳</div>
+                    <h3 class="text-xl font-bold mb-2">Community</h3>
+                    <p class="text-stone-600">Follow creators, save favorites, join conversations, and discover recipes from real home cooks.</p>
+                </a>
+
+                <a href="{{ route('recipes.index') }}#admin" id="admin" class="block rounded-3xl border border-stone-200 bg-white p-6 shadow-sm hover:-translate-y-1 hover:shadow-md transition">
+                    <div class="mb-4 flex h-12 w-12 items-center justify-center rounded-2xl bg-sky-100 text-2xl">⚙️</div>
+                    <h3 class="text-xl font-bold mb-2">Administration</h3>
+                    <p class="text-stone-600">Manage users, recipes, categories, reports, moderation, and platform statistics from one place.</p>
+                </a>
+            </div>
+        </section>
+
+        <section class="mt-20 bg-stone-900 text-white rounded-3xl p-8 md:p-10">
+            <div class="grid lg:grid-cols-[1.1fr_0.9fr] gap-8 items-center">
+                <div>
+                    <p class="text-sm uppercase tracking-[0.2em] text-orange-300 font-semibold">Smart choices</p>
+                    <h2 class="mt-3 text-3xl font-bold">More than recipes — a kitchen system that keeps improving.</h2>
+                </div>
+                <div class="grid grid-cols-2 gap-4 text-sm">
+                    <div class="bg-white/5 rounded-2xl p-4 border border-white/10">
+                        <div class="text-2xl font-black text-orange-300">24/7</div>
+                        <div class="text-stone-300">Cooking guidance</div>
+                    </div>
+                    <div class="bg-white/5 rounded-2xl p-4 border border-white/10">
+                        <div class="text-2xl font-black text-orange-300">1-click</div>
+                        <div class="text-stone-300">Meal planning</div>
+                    </div>
+                    <div class="bg-white/5 rounded-2xl p-4 border border-white/10">
+                        <div class="text-2xl font-black text-orange-300">10x</div>
+                        <div class="text-stone-300">More kitchen ideas</div>
+                    </div>
+                    <div class="bg-white/5 rounded-2xl p-4 border border-white/10">
+                        <div class="text-2xl font-black text-orange-300">100%</div>
+                        <div class="text-stone-300">Practical recipes</div>
+                    </div>
+                </div>
+            </div>
+        </section>
     </div>
 </body>
 </html>

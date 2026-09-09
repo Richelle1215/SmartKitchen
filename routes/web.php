@@ -5,10 +5,25 @@ use App\Http\Controllers\RecipeController;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Route;
 
+// Public routes
 Route::get('/', function () {
     return view('home');
-});
+})->name('home');
 
+// Recipe browsing (public)
+Route::get('/recipes', [RecipeController::class, 'index'])->name('recipes.index');
+Route::get('/recipes/{recipe}', [RecipeController::class, 'show'])->name('recipes.show');
+Route::get('/recipes/user/{userId}', [RecipeController::class, 'userRecipes'])->name('recipes.user-recipes');
+Route::get('/recipes/search/ingredients', [RecipeController::class, 'searchByIngredients'])->name('recipes.search-by-ingredients');
+
+// Feature pages
+Route::view('/pantry', 'features.pantry')->name('pantry');
+Route::view('/planner', 'features.planner')->name('planner');
+Route::view('/assistant', 'features.assistant')->name('assistant');
+Route::view('/community', 'features.community')->name('community');
+Route::view('/admin', 'features.admin')->name('admin');
+
+// Dashboard
 Route::get('/dashboard', function () {
     $user = Auth::user();
     $recipes = $user->recipes()->latest()->get();
@@ -21,13 +36,20 @@ Route::get('/dashboard', function () {
     return view('dashboard', compact('recipes', 'stats'));
 })->middleware(['auth', 'verified'])->name('dashboard');
 
+// Authenticated user routes
 Route::middleware('auth')->group(function () {
+    // Profile
     Route::get('/profile', [ProfileController::class, 'edit'])->name('profile.edit');
     Route::patch('/profile', [ProfileController::class, 'update'])->name('profile.update');
     Route::delete('/profile', [ProfileController::class, 'destroy'])->name('profile.destroy');
-    Route::resource('recipes', RecipeController::class)->except(['index']);
-});
 
-Route::get('/recipes', [RecipeController::class, 'index'])->name('recipes.index');
+    // Recipe management (for authenticated users)
+    Route::get('/recipes/create', [RecipeController::class, 'create'])->name('recipes.create');
+    Route::post('/recipes', [RecipeController::class, 'store'])->name('recipes.store');
+    Route::get('/recipes/{recipe}/edit', [RecipeController::class, 'edit'])->name('recipes.edit');
+    Route::patch('/recipes/{recipe}', [RecipeController::class, 'update'])->name('recipes.update');
+    Route::delete('/recipes/{recipe}', [RecipeController::class, 'destroy'])->name('recipes.destroy');
+    Route::get('/my-recipes', [RecipeController::class, 'myRecipes'])->name('recipes.my-recipes');
+});
 
 require __DIR__.'/auth.php';

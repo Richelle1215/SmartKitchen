@@ -12,15 +12,15 @@
 
         @vite(['resources/css/app.css', 'resources/js/app.js'])
     </head>
-    <body class="font-sans antialiased">
-        <div class="smart-auth-shell">
-            <div class="smart-auth-brand">
-                <a href="/" aria-label="SmartKitchen home">
-                    <div class="smart-auth-mark" aria-hidden="true"></div>
+    <body class="font-sans text-gray-900 antialiased">
+        <div class="min-h-screen flex flex-col sm:justify-center items-center pt-6 sm:pt-0 bg-gray-100">
+            <div>
+                <a href="/">
+                    <span class="text-2xl font-semibold text-gray-900">SmartKitchen</span>
                 </a>
             </div>
 
-            <div class="smart-auth-card">
+            <div class="w-full sm:max-w-md mt-6 px-6 py-4 bg-white shadow-md overflow-hidden sm:rounded-lg">
                 {{ $slot }}
             </div>
         </div>
