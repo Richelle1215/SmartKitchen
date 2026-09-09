@@ -10,6 +10,8 @@ use App\Http\Controllers\FavoriteController;
 use App\Http\Controllers\FollowController;
 use App\Http\Controllers\AIAssistantController;
 use App\Http\Controllers\PantryController;
+use App\Http\Controllers\MealPlanController;
+use App\Http\Controllers\CostCalculatorController;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Route;
 
@@ -109,6 +111,24 @@ Route::middleware('auth')->group(function () {
     Route::get('/pantry/low-stock', [PantryController::class, 'lowStock'])->name('pantry.low-stock');
     Route::get('/pantry/expired', [PantryController::class, 'expired'])->name('pantry.expired');
     Route::get('/pantry/suggest-recipes', [PantryController::class, 'suggestRecipes'])->name('pantry.suggest-recipes');
+
+    // Meal Planner
+    Route::get('/meal-plans', [MealPlanController::class, 'index'])->name('meal-plans.index');
+    Route::get('/meal-plans/create', [MealPlanController::class, 'create'])->name('meal-plans.create');
+    Route::post('/meal-plans', [MealPlanController::class, 'store'])->name('meal-plans.store');
+    Route::get('/meal-plans/{mealPlan}', [MealPlanController::class, 'show'])->name('meal-plans.show');
+    Route::get('/meal-plans/{mealPlan}/edit', [MealPlanController::class, 'edit'])->name('meal-plans.edit');
+    Route::patch('/meal-plans/{mealPlan}', [MealPlanController::class, 'update'])->name('meal-plans.update');
+    Route::delete('/meal-plans/{mealPlan}', [MealPlanController::class, 'destroy'])->name('meal-plans.destroy');
+    Route::post('/meal-plans/{mealPlan}/items', [MealPlanController::class, 'addItem'])->name('meal-plans.add-item');
+    Route::delete('/meal-plan-items/{item}', [MealPlanController::class, 'removeItem'])->name('meal-plans.remove-item');
+    Route::get('/meal-plans/weekly/suggestion', [MealPlanController::class, 'generateWeekly'])->name('meal-plans.weekly-suggestion');
+    Route::get('/meal-plans/{mealPlan}/shopping-list', [MealPlanController::class, 'shoppingList'])->name('meal-plans.shopping-list');
+
+    // Cost Calculator
+    Route::get('/cost-calculator', [CostCalculatorController::class, 'index'])->name('cost-calculator.index');
+    Route::post('/cost-calculator/calculate', [CostCalculatorController::class, 'calculate'])->name('cost-calculator.calculate');
+    Route::get('/recipes/{recipe}/cost', [CostCalculatorController::class, 'recipeCost'])->name('recipes.cost');
 });
 
 require __DIR__.'/auth.php';
