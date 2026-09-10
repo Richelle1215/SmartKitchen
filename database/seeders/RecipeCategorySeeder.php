@@ -110,12 +110,14 @@ class RecipeCategorySeeder extends Seeder
         ];
 
         foreach ($categories as $category) {
-            RecipeCategory::create([
-                'name' => $category['name'],
-                'slug' => Str::slug($category['name']),
-                'description' => $category['description'],
-                'icon' => $category['icon'],
-            ]);
+            RecipeCategory::updateOrCreate(
+                ['slug' => Str::slug($category['name'])],
+                [
+                    'name' => $category['name'],
+                    'description' => $category['description'],
+                    'icon' => $category['icon'],
+                ]
+            );
         }
     }
 }

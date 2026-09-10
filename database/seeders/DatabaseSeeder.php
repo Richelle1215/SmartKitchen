@@ -18,11 +18,14 @@ class DatabaseSeeder extends Seeder
         // Seed recipe categories
         $this->call(RecipeCategorySeeder::class);
 
-        // User::factory(10)->create();
-
-        User::factory()->create([
-            'name' => 'Test User',
-            'email' => 'test@example.com',
-        ]);
+        // Create or update test user with registered role
+        User::firstOrCreate(
+            ['email' => 'test@example.com'],
+            [
+                'name' => 'Test User',
+                'role' => 'registered',
+                'email_verified_at' => now(),
+            ]
+        );
     }
 }
