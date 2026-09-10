@@ -107,7 +107,7 @@
                          onclick="document.getElementById('recipe_image').click()">
                         <div class="text-5xl mb-3">🎥</div>
                         <p class="font-medium text-gray-700 mb-1">Drag and drop your cooking photo/video</p>
-                        <p class="text-xs text-gray-500">PNG, JPG or MP4 up to 5MB</p>
+                        <p class="text-xs text-gray-500">PNG, JPG, GIF, or WebP up to 50MB</p>
                         <input type="file" id="recipe_image" name="recipe_image" accept="image/*,video/*" style="display: none;"
                                onchange="updateFileName(this, 'recipe_image_name')">
                     </div>
@@ -148,7 +148,7 @@
                          onclick="document.getElementById('recipe_video').click()">
                         <div class="text-4xl mb-2">🎬</div>
                         <p class="text-sm text-gray-700 font-medium">Upload cooking video</p>
-                        <p class="text-xs text-gray-500 mt-1">MP4 up to 20MB</p>
+                        <p class="text-xs text-gray-500 mt-1">MP4, WebM, MOV, AVI, MKV up to 500MB</p>
                         <input type="file" id="recipe_video" name="recipe_video" accept="video/*" style="display: none;"
                                onchange="updateFileName(this, 'recipe_video_name')">
                     </div>

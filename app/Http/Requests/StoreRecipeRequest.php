@@ -28,8 +28,8 @@ class StoreRecipeRequest extends FormRequest
             'prep_time' => ['nullable', 'integer', 'min:1', 'max:1440'],
             'cook_time' => ['nullable', 'integer', 'min:1', 'max:1440'],
             'servings' => ['required', 'integer', 'min:1', 'max:100'],
-            'recipe_image' => ['nullable', 'image', 'mimes:jpeg,png,jpg,gif', 'max:5120'],
-            'recipe_video' => ['nullable', 'mimes:mp4,mov,avi,mkv', 'max:102400'], // 100MB
+            'recipe_image' => ['nullable', 'image', 'mimes:jpeg,png,jpg,gif,webp', 'max:51200'], // 50MB
+            'recipe_video' => ['nullable', 'mimes:mp4,mov,avi,mkv,webm', 'max:512000'], // 500MB
             'is_published' => ['boolean'],
             'ingredients' => ['required', 'array', 'min:1'],
             'ingredients.*.name' => ['required', 'string', 'max:255'],
