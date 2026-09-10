@@ -52,4 +52,13 @@ class RecipePolicy
     {
         return $user->id === $recipe->user_id;
     }
+
+    /**
+     * Determine whether the user can like the recipe.
+     */
+    public function like(User $user, Recipe $recipe): bool
+    {
+        // Only registered users can like, and cannot like their own recipes
+        return $user->isRegistered() && $user->id !== $recipe->user_id;
+    }
 }

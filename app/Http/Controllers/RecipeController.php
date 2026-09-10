@@ -27,10 +27,21 @@ class RecipeController extends Controller
             $query->where('category_id', $request->category_id);
         }
 
-        // Search by title
+        // Search by title, description, OR ingredients
         if ($request->search) {
-            $query->where('title', 'like', "%{$request->search}%")
-                  ->orWhere('description', 'like', "%{$request->search}%");
+            $query->where(function ($q) use ($request) {
+                $q->where('title', 'like', "%{$request->search}%")
+                  ->orWhere('description', 'like', "%{$request->search}%")
+                  ->orWhereHas('ingredients', function ($subQ) use ($request) {
+                      $subQ->where('ingredient_name', 'like', "%{$request->search}%");
+                  });
+            });
+        }
+
+        // Filter by max preparation time (in minutes)
+        if ($request->max_prep_time) {
+            $maxPrepTime = (int) $request->max_prep_time;
+            $query->where('prep_time', '<=', $maxPrepTime);
         }
 
         // Sort options
@@ -42,7 +53,8 @@ class RecipeController extends Controller
             default => $query->orderByDesc('created_at'),
         };
 
-        $recipes = $query->with(['user', 'category', 'ratings'])
+        $recipes = $query->distinct()
+                        ->with(['user', 'category', 'ratings', 'ingredients'])
                         ->paginate(12);
         
         $categories = RecipeCategory::all();
@@ -70,6 +82,14 @@ class RecipeController extends Controller
 
         try {
             $data = $request->validated();
+            
+            // Extract ingredients and instructions before creating recipe
+            $ingredients = $data['ingredients'] ?? [];
+            $instructions = $data['instructions'] ?? [];
+            
+            // Remove non-fillable fields from $data
+            unset($data['ingredients'], $data['instructions']);
+            
             $data['user_id'] = auth()->id();
             $data['is_published'] = true;  // Ensure this is set
             
@@ -88,8 +108,8 @@ class RecipeController extends Controller
             $recipe = Recipe::create($data);
 
             // Store ingredients
-            if ($request->ingredients) {
-                foreach ($request->ingredients as $index => $ingredient) {
+            if ($ingredients) {
+                foreach ($ingredients as $index => $ingredient) {
                     RecipeIngredient::create([
                         'recipe_id' => $recipe->id,
                         'ingredient_name' => $ingredient['name'],
@@ -101,8 +121,8 @@ class RecipeController extends Controller
             }
 
             // Store instructions
-            if ($request->instructions) {
-                foreach ($request->instructions as $index => $instruction) {
+            if ($instructions) {
+                foreach ($instructions as $index => $instruction) {
                     RecipeInstruction::create([
                         'recipe_id' => $recipe->id,
                         'step_number' => $index + 1,
@@ -114,13 +134,11 @@ class RecipeController extends Controller
             }
 
             // Create user statistics if not exists
-            if (!auth()->user()->statistics) {
-                auth()->user()->statistics()->create();
-            }
-            
-            auth()->user()->statistics->increment('total_recipes');
-            if ($recipe->is_published) {
-                auth()->user()->statistics->increment('total_published_recipes');
+            if (auth()->user()->statistics) {
+                auth()->user()->statistics->increment('total_recipes');
+                if ($recipe->is_published) {
+                    auth()->user()->statistics->increment('total_published_recipes');
+                }
             }
 
             return redirect()->route('recipes.show', $recipe)
@@ -136,6 +154,9 @@ class RecipeController extends Controller
      */
     public function show(Recipe $recipe)
     {
+        // Check authorization using policy
+        $this->authorize('view', $recipe);
+        
         // Increment view count
         if (!session()->has("recipe_viewed_{$recipe->id}")) {
             $recipe->incrementViewCount();

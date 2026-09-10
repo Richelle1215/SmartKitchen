@@ -12,12 +12,13 @@
         <!-- Search and Filters -->
         <div class="mb-8 bg-white rounded-lg shadow p-6">
             <form method="GET" action="{{ route('recipes.index') }}" class="space-y-4">
-                <div class="grid grid-cols-1 md:grid-cols-4 gap-4">
+                <div class="grid grid-cols-1 md:grid-cols-5 gap-4">
                     <!-- Search -->
                     <div>
-                        <label for="search" class="block text-sm font-medium text-gray-700 mb-1">Search</label>
-                        <input type="text" name="search" id="search" placeholder="Recipe name..." 
+                        <label for="search" class="block text-sm font-medium text-gray-700 mb-1">Search Recipe or Ingredient</label>
+                        <input type="text" name="search" id="search" placeholder="e.g. chicken, pasta..." 
                                value="{{ request('search') }}" class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-orange-500 focus:border-orange-500">
+                        <p class="text-xs text-gray-500 mt-1">Searches title, description & ingredients</p>
                     </div>
 
                     <!-- Category Filter -->
@@ -33,6 +34,18 @@
                         </select>
                     </div>
 
+                    <!-- Prep Time Filter -->
+                    <div>
+                        <label for="max_prep_time" class="block text-sm font-medium text-gray-700 mb-1">Max Prep Time</label>
+                        <select name="max_prep_time" id="max_prep_time" class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-orange-500 focus:border-orange-500">
+                            <option value="">Any time</option>
+                            <option value="15" {{ request('max_prep_time') == '15' ? 'selected' : '' }}>15 min</option>
+                            <option value="30" {{ request('max_prep_time') == '30' ? 'selected' : '' }}>30 min</option>
+                            <option value="45" {{ request('max_prep_time') == '45' ? 'selected' : '' }}>45 min</option>
+                            <option value="60" {{ request('max_prep_time') == '60' ? 'selected' : '' }}>1 hour</option>
+                        </select>
+                    </div>
+
                     <!-- Sort By -->
                     <div>
                         <label for="sort" class="block text-sm font-medium text-gray-700 mb-1">Sort By</label>
@@ -44,11 +57,14 @@
                         </select>
                     </div>
 
-                    <!-- Submit Button -->
-                    <div class="flex items-end">
-                        <button type="submit" class="w-full bg-orange-500 hover:bg-orange-600 text-white font-medium py-2 px-4 rounded-md transition">
+                    <!-- Buttons -->
+                    <div class="flex items-end gap-2">
+                        <button type="submit" class="flex-1 bg-orange-500 hover:bg-orange-600 text-white font-medium py-2 px-4 rounded-md transition">
                             Search
                         </button>
+                        <a href="{{ route('recipes.index') }}" class="px-3 py-2 bg-gray-300 hover:bg-gray-400 text-gray-700 font-medium rounded-md transition text-center">
+                            Clear
+                        </a>
                     </div>
                 </div>
             </form>

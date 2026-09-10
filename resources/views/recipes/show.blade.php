@@ -259,8 +259,121 @@
                         @endforelse
                     </div>
                 </div>
+
+                <!-- Comments Section -->
+                <div class="bg-white rounded-lg shadow p-6 mt-8">
+                    <h3 class="text-xl font-bold text-gray-900 mb-4 flex items-center">
+                        <svg class="w-6 h-6 mr-2 text-orange-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 8h10M7 12h4m1 8l-4-4H5a2 2 0 01-2-2V6a2 2 0 012-2h14a2 2 0 012 2v8a2 2 0 01-2 2h-3l-4 4z"></path>
+                        </svg>
+                        Comments ({{ $recipe->comments()->where('parent_id', null)->count() }})
+                    </h3>
+
+                    @auth
+                        <!-- Add Comment Form -->
+                        <form method="POST" action="{{ route('comments.store', $recipe) }}" class="mb-8 pb-8 border-b border-gray-200">
+                            @csrf
+                            <div class="flex gap-4 mb-4">
+                                <div class="w-10 h-10 rounded-full bg-orange-200 flex-shrink-0 flex items-center justify-center">
+                                    @if(auth()->user()->profile_picture)
+                                        <img src="{{ asset('storage/' . auth()->user()->profile_picture) }}" alt="{{ auth()->user()->name }}" class="w-full h-full object-cover rounded-full">
+                                    @else
+                                        <span class="text-orange-600 font-bold">{{ substr(auth()->user()->name, 0, 1) }}</span>
+                                    @endif
+                                </div>
+                                <div class="flex-1">
+                                    <textarea name="content" placeholder="Share your thoughts about this recipe..." 
+                                              class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-orange-500 focus:border-orange-500 resize-none" 
+                                              rows="3" required></textarea>
+                                    <div class="mt-3 flex justify-end">
+                                        <button type="submit" class="px-4 py-2 bg-orange-500 hover:bg-orange-600 text-white rounded-lg transition">
+                                            Post Comment
+                                        </button>
+                                    </div>
+                                </div>
+                            </div>
+                        </form>
+                    @else
+                        <div class="mb-8 pb-8 border-b border-gray-200">
+                            <p class="text-gray-600"><a href="{{ route('login') }}" class="text-orange-500 hover:text-orange-600">Login</a> to post a comment</p>
+                        </div>
+                    @endauth
+
+                    <!-- Comments List -->
+                    <div class="space-y-6">
+                        @forelse($recipe->comments()->where('parent_id', null)->latest()->get() as $comment)
+                            <div class="pb-6 border-b border-gray-100 last:border-0">
+                                <!-- Comment Header -->
+                                <div class="flex gap-4">
+                                    <div class="w-10 h-10 rounded-full bg-orange-200 flex-shrink-0 flex items-center justify-center">
+                                        @if($comment->user->profile_picture)
+                                            <img src="{{ asset('storage/' . $comment->user->profile_picture) }}" alt="{{ $comment->user->name }}" class="w-full h-full object-cover rounded-full">
+                                        @else
+                                            <span class="text-orange-600 font-bold">{{ substr($comment->user->name, 0, 1) }}</span>
+                                        @endif
+                                    </div>
+                                    <div class="flex-1">
+                                        <div class="flex justify-between items-start mb-2">
+                                            <h4 class="font-medium text-gray-900">{{ $comment->user->name }}</h4>
+                                            @auth
+                                                @if(auth()->user()->id === $comment->user_id)
+                                                    <div class="flex gap-2">
+                                                        <button onclick="editComment({{ $comment->id }})" class="text-blue-500 hover:text-blue-600 text-sm">Edit</button>
+                                                        <form method="POST" action="{{ route('comments.destroy', $comment) }}" class="inline" onsubmit="return confirm('Delete this comment?');">
+                                                            @csrf
+                                                            @method('DELETE')
+                                                            <button type="submit" class="text-red-500 hover:text-red-600 text-sm">Delete</button>
+                                                        </form>
+                                                    </div>
+                                                @endif
+                                            @endauth
+                                        </div>
+                                        <p class="text-gray-700 mb-2">{{ $comment->content }}</p>
+                                        <p class="text-xs text-gray-500 mb-3">{{ $comment->created_at->diffForHumans() }}</p>
+
+                                        <!-- Replies -->
+                                        @if($comment->replies->count() > 0)
+                                            <div class="ml-4 space-y-3 mb-3 pl-4 border-l-2 border-gray-200">
+                                                @foreach($comment->replies as $reply)
+                                                    <div class="pb-3 border-b border-gray-100 last:border-0">
+                                                        <div class="flex justify-between items-start mb-1">
+                                                            <h5 class="font-medium text-sm text-gray-900">{{ $reply->user->name }}</h5>
+                                                            @auth
+                                                                @if(auth()->user()->id === $reply->user_id)
+                                                                    <div class="flex gap-2">
+                                                                        <button onclick="editComment({{ $reply->id }})" class="text-blue-500 hover:text-blue-600 text-xs">Edit</button>
+                                                                        <form method="POST" action="{{ route('comments.destroy', $reply) }}" class="inline" onsubmit="return confirm('Delete this reply?');">
+                                                                            @csrf
+                                                                            @method('DELETE')
+                                                                            <button type="submit" class="text-red-500 hover:text-red-600 text-xs">Delete</button>
+                                                                        </form>
+                                                                    </div>
+                                                                @endif
+                                                            @endauth
+                                                        </div>
+                                                        <p class="text-gray-700 text-sm">{{ $reply->content }}</p>
+                                                        <p class="text-xs text-gray-500 mt-1">{{ $reply->created_at->diffForHumans() }}</p>
+                                                    </div>
+                                                @endforeach
+                                            </div>
+                                        @endif
+                                    </div>
+                                </div>
+                            </div>
+                        @empty
+                            <p class="text-gray-500 text-center py-8">No comments yet. Be the first to share your thoughts!</p>
+                        @endforelse
+                    </div>
+                </div>
             </div>
         </div>
     </div>
 </div>
+
+<script>
+function editComment(commentId) {
+    alert('Edit comment functionality coming soon');
+    // TODO: Implement inline edit for comments
+}
+</script>
 @endsection

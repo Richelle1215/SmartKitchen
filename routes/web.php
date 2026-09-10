@@ -3,10 +3,12 @@
 use App\Http\Controllers\ProfileController;
 use App\Http\Controllers\RecipeController;
 use App\Http\Controllers\SearchController;
+use App\Http\Controllers\CategoriesController;
 use App\Http\Controllers\RatingController;
 use App\Http\Controllers\CommentController;
 use App\Http\Controllers\LikeController;
 use App\Http\Controllers\FavoriteController;
+use App\Http\Controllers\CollectionController;
 use App\Http\Controllers\FollowController;
 use App\Http\Controllers\AIAssistantController;
 use App\Http\Controllers\PantryController;
@@ -31,7 +33,11 @@ Route::get('/search/by-ingredients', [SearchController::class, 'byIngredients'])
 Route::get('/search/trending', [SearchController::class, 'trending'])->name('search.trending');
 Route::get('/search/popular', [SearchController::class, 'popular'])->name('search.popular');
 Route::get('/search/recent', [SearchController::class, 'recent'])->name('search.recent');
-Route::get('/categories/{category}', [SearchController::class, 'category'])->name('categories.show');
+
+// Categories
+Route::get('/categories', [CategoriesController::class, 'index'])->name('categories.index');
+Route::get('/categories/{category}', [CategoriesController::class, 'show'])->name('categories.show');
+
 Route::get('/recipes', [RecipeController::class, 'index'])->name('recipes.index');
 Route::get('/recipes/create', [RecipeController::class, 'create'])->name('recipes.create');
 Route::get('/recipes/search/ingredients', [RecipeController::class, 'searchByIngredients'])->name('recipes.search-by-ingredients');
@@ -45,24 +51,22 @@ Route::view('/assistant', 'features.assistant')->name('assistant');
 Route::view('/community', 'features.community')->name('community');
 Route::view('/admin', 'features.admin')->name('admin');
 
-// Dashboard
+// Dashboard - Redirect to Profile (My Profile Page)
 Route::get('/dashboard', function () {
-    $user = Auth::user();
-    $recipes = $user->recipes()->latest()->get();
-    $stats = [
-        'total_recipes' => $recipes->count(),
-        'total_servings' => $recipes->sum('servings'),
-        'avg_prep_time' => $recipes->count() ? (int) round($recipes->avg('prep_time')) : 0,
-    ];
-
-    return view('dashboard', compact('recipes', 'stats'));
+    return redirect()->route('profile.dashboard');
 })->middleware(['auth', 'verified'])->name('dashboard');
+
+// My Profile - Shows user profile + my recipes + manage recipes
+Route::get('/profile/dashboard', [ProfileController::class, 'dashboard'])->middleware(['auth', 'verified'])->name('profile.dashboard');
 
 // Authenticated user routes
 Route::middleware('auth')->group(function () {
     // Profile
     Route::get('/profile', [ProfileController::class, 'edit'])->name('profile.edit');
+    Route::get('/profile/show', [ProfileController::class, 'show'])->name('profile.show');
     Route::patch('/profile', [ProfileController::class, 'update'])->name('profile.update');
+    Route::post('/profile/upload-picture', [ProfileController::class, 'uploadProfilePicture'])->name('profile.upload-picture');
+    Route::get('/profile/change-password', [ProfileController::class, 'showChangePassword'])->name('profile.change-password');
     Route::delete('/profile', [ProfileController::class, 'destroy'])->name('profile.destroy');
 
     // Recipe management (for authenticated users)
@@ -89,6 +93,17 @@ Route::middleware('auth')->group(function () {
     Route::get('/favorites', [FavoriteController::class, 'index'])->name('favorites.index');
     Route::post('/recipes/{recipe}/favorite', [FavoriteController::class, 'store'])->name('recipes.favorite');
     Route::delete('/recipes/{recipe}/favorite', [FavoriteController::class, 'destroy'])->name('favorites.destroy');
+
+    // Community features - Collections
+    Route::get('/collections', [CollectionController::class, 'index'])->name('collections.index');
+    Route::get('/collections/create', [CollectionController::class, 'create'])->name('collections.create');
+    Route::post('/collections', [CollectionController::class, 'store'])->name('collections.store');
+    Route::get('/collections/{collection}', [CollectionController::class, 'show'])->name('collections.show');
+    Route::get('/collections/{collection}/edit', [CollectionController::class, 'edit'])->name('collections.edit');
+    Route::patch('/collections/{collection}', [CollectionController::class, 'update'])->name('collections.update');
+    Route::delete('/collections/{collection}', [CollectionController::class, 'destroy'])->name('collections.destroy');
+    Route::post('/collections/{collection}/recipes', [CollectionController::class, 'addRecipe'])->name('collections.add-recipe');
+    Route::delete('/collections/{collection}/recipes/{recipe}', [CollectionController::class, 'removeRecipe'])->name('collections.remove-recipe');
 
     // Community features - Follow
     Route::post('/users/{user}/follow', [FollowController::class, 'store'])->name('users.follow');
