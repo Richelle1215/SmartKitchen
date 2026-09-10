@@ -63,6 +63,29 @@
                     @enderror
                 </div>
 
+                <!-- Prep Time & Servings -->
+                <div class="grid grid-cols-2 gap-4">
+                    <div>
+                        <label for="prep_time" class="block text-sm font-semibold text-gray-900 mb-3">Prep Time (min)</label>
+                        <input type="number" id="prep_time" name="prep_time" value="{{ old('prep_time') }}" min="1"
+                               class="w-full px-4 py-3 border border-gray-300 rounded text-gray-900 focus:outline-none focus:ring-2 focus:ring-green-500 focus:border-transparent"
+                               placeholder="30">
+                        @error('prep_time')
+                            <p class="text-red-500 text-xs mt-1">{{ $message }}</p>
+                        @enderror
+                    </div>
+
+                    <div>
+                        <label for="servings" class="block text-sm font-semibold text-gray-900 mb-3">Servings</label>
+                        <input type="number" id="servings" name="servings" value="{{ old('servings') }}" required min="1"
+                               class="w-full px-4 py-3 border border-gray-300 rounded text-gray-900 focus:outline-none focus:ring-2 focus:ring-green-500 focus:border-transparent"
+                               placeholder="4">
+                        @error('servings')
+                            <p class="text-red-500 text-xs mt-1">{{ $message }}</p>
+                        @enderror
+                    </div>
+                </div>
+
                 <!-- Ingredients -->
                 <div>
                     <h2 class="text-sm font-semibold text-gray-900 mb-4">Ingredients</h2>
