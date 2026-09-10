@@ -33,9 +33,10 @@ Route::get('/search/popular', [SearchController::class, 'popular'])->name('searc
 Route::get('/search/recent', [SearchController::class, 'recent'])->name('search.recent');
 Route::get('/categories/{category}', [SearchController::class, 'category'])->name('categories.show');
 Route::get('/recipes', [RecipeController::class, 'index'])->name('recipes.index');
-Route::get('/recipes/{recipe}', [RecipeController::class, 'show'])->name('recipes.show');
-Route::get('/recipes/user/{userId}', [RecipeController::class, 'userRecipes'])->name('recipes.user-recipes');
+Route::get('/recipes/create', [RecipeController::class, 'create'])->name('recipes.create');
 Route::get('/recipes/search/ingredients', [RecipeController::class, 'searchByIngredients'])->name('recipes.search-by-ingredients');
+Route::get('/recipes/user/{userId}', [RecipeController::class, 'userRecipes'])->name('recipes.user-recipes');
+Route::get('/recipes/{recipe}', [RecipeController::class, 'show'])->name('recipes.show');
 
 // Feature pages
 Route::view('/pantry', 'features.pantry')->name('pantry');
@@ -65,7 +66,6 @@ Route::middleware('auth')->group(function () {
     Route::delete('/profile', [ProfileController::class, 'destroy'])->name('profile.destroy');
 
     // Recipe management (for authenticated users)
-    Route::get('/recipes/create', [RecipeController::class, 'create'])->name('recipes.create');
     Route::post('/recipes', [RecipeController::class, 'store'])->name('recipes.store');
     Route::get('/recipes/{recipe}/edit', [RecipeController::class, 'edit'])->name('recipes.edit');
     Route::patch('/recipes/{recipe}', [RecipeController::class, 'update'])->name('recipes.update');
