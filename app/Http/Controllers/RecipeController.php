@@ -10,6 +10,7 @@ use App\Http\Requests\StoreRecipeRequest;
 use App\Http\Requests\UpdateRecipeRequest;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Storage;
+use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Str;
 
 class RecipeController extends Controller
@@ -67,61 +68,67 @@ class RecipeController extends Controller
     {
         $this->authorize('create', Recipe::class);
 
-        $data = $request->validated();
-        $data['user_id'] = auth()->id();
-        
-        // Handle image upload
-        if ($request->hasFile('recipe_image')) {
-            $data['recipe_image'] = $request->file('recipe_image')
-                ->storeAs('recipes/images', Str::uuid() . '.' . $request->file('recipe_image')->getClientOriginalExtension(), 'public');
-        }
-
-        // Handle video upload
-        if ($request->hasFile('recipe_video')) {
-            $data['recipe_video'] = $request->file('recipe_video')
-                ->storeAs('recipes/videos', Str::uuid() . '.' . $request->file('recipe_video')->getClientOriginalExtension(), 'public');
-        }
-
-        $recipe = Recipe::create($data);
-
-        // Store ingredients
-        if ($request->ingredients) {
-            foreach ($request->ingredients as $index => $ingredient) {
-                RecipeIngredient::create([
-                    'recipe_id' => $recipe->id,
-                    'ingredient_name' => $ingredient['name'],
-                    'quantity' => $ingredient['quantity'],
-                    'unit' => $ingredient['unit'],
-                    'order' => $index,
-                ]);
+        try {
+            $data = $request->validated();
+            $data['user_id'] = auth()->id();
+            $data['is_published'] = true;  // Ensure this is set
+            
+            // Handle image upload
+            if ($request->hasFile('recipe_image')) {
+                $data['recipe_image'] = $request->file('recipe_image')
+                    ->storeAs('recipes/images', Str::uuid() . '.' . $request->file('recipe_image')->getClientOriginalExtension(), 'public');
             }
-        }
 
-        // Store instructions
-        if ($request->instructions) {
-            foreach ($request->instructions as $index => $instruction) {
-                RecipeInstruction::create([
-                    'recipe_id' => $recipe->id,
-                    'step_number' => $index + 1,
-                    'instruction' => $instruction['text'],
-                    'image' => $instruction['image'] ?? null,
-                    'video' => $instruction['video'] ?? null,
-                ]);
+            // Handle video upload
+            if ($request->hasFile('recipe_video')) {
+                $data['recipe_video'] = $request->file('recipe_video')
+                    ->storeAs('recipes/videos', Str::uuid() . '.' . $request->file('recipe_video')->getClientOriginalExtension(), 'public');
             }
-        }
 
-        // Create user statistics if not exists
-        if (!auth()->user()->statistics) {
-            auth()->user()->statistics()->create();
-        }
-        
-        auth()->user()->statistics->increment('total_recipes');
-        if ($recipe->is_published) {
-            auth()->user()->statistics->increment('total_published_recipes');
-        }
+            $recipe = Recipe::create($data);
 
-        return redirect()->route('recipes.show', $recipe)
-                       ->with('success', 'Recipe created successfully!');
+            // Store ingredients
+            if ($request->ingredients) {
+                foreach ($request->ingredients as $index => $ingredient) {
+                    RecipeIngredient::create([
+                        'recipe_id' => $recipe->id,
+                        'ingredient_name' => $ingredient['name'],
+                        'quantity' => $ingredient['quantity'],
+                        'unit' => $ingredient['unit'],
+                        'order' => $index,
+                    ]);
+                }
+            }
+
+            // Store instructions
+            if ($request->instructions) {
+                foreach ($request->instructions as $index => $instruction) {
+                    RecipeInstruction::create([
+                        'recipe_id' => $recipe->id,
+                        'step_number' => $index + 1,
+                        'instruction' => $instruction['text'],
+                        'image' => $instruction['image'] ?? null,
+                        'video' => $instruction['video'] ?? null,
+                    ]);
+                }
+            }
+
+            // Create user statistics if not exists
+            if (!auth()->user()->statistics) {
+                auth()->user()->statistics()->create();
+            }
+            
+            auth()->user()->statistics->increment('total_recipes');
+            if ($recipe->is_published) {
+                auth()->user()->statistics->increment('total_published_recipes');
+            }
+
+            return redirect()->route('recipes.show', $recipe)
+                           ->with('success', 'Recipe created successfully!');
+        } catch (\Exception $e) {
+            \Log::error('Recipe creation error: ' . $e->getMessage());
+            return back()->with('error', 'Error creating recipe: ' . $e->getMessage())->withInput();
+        }
     }
 
     /**
