@@ -14,7 +14,7 @@ return new class extends Migration
         Schema::table('recipes', function (Blueprint $table) {
             // Only add columns that don't exist yet
             if (!Schema::hasColumn('recipes', 'category_id')) {
-                $table->foreignId('category_id')->nullable()->after('user_id')->constrained('recipe_categories')->onDelete('set null');
+                $table->foreignId('category_id')->constrained('recipe_categories')->onDelete('cascade');
             }
             
             if (!Schema::hasColumn('recipes', 'cook_time')) {
@@ -53,23 +53,16 @@ return new class extends Migration
     public function down(): void
     {
         Schema::table('recipes', function (Blueprint $table) {
-            $table->dropForeignKeyIfExists(['category_id']);
-            $cols = [];
-            if (Schema::hasColumn('recipes', 'category_id')) $cols[] = 'category_id';
-            if (Schema::hasColumn('recipes', 'cook_time')) $cols[] = 'cook_time';
-            if (Schema::hasColumn('recipes', 'recipe_image')) $cols[] = 'recipe_image';
-            if (Schema::hasColumn('recipes', 'recipe_video')) $cols[] = 'recipe_video';
-            if (Schema::hasColumn('recipes', 'average_rating')) $cols[] = 'average_rating';
-            if (Schema::hasColumn('recipes', 'rating_count')) $cols[] = 'rating_count';
-            if (Schema::hasColumn('recipes', 'view_count')) $cols[] = 'view_count';
-            if (Schema::hasColumn('recipes', 'like_count')) $cols[] = 'like_count';
-            if (Schema::hasColumn('recipes', 'comment_count')) $cols[] = 'comment_count';
-            if (Schema::hasColumn('recipes', 'is_published')) $cols[] = 'is_published';
-            if (Schema::hasColumn('recipes', 'deleted_at')) $cols[] = 'deleted_at';
-            
-            if (!empty($cols)) {
-                $table->dropColumn($cols);
+            if (Schema::hasColumn('recipes', 'category_id')) {
+                $table->dropForeign(['category_id']);
+                $table->dropColumn('category_id');
             }
+            if (Schema::hasColumn('recipes', 'cook_time')) $table->dropColumn('cook_time');
+            if (Schema::hasColumn('recipes', 'recipe_image')) $table->dropColumn('recipe_image');
+            if (Schema::hasColumn('recipes', 'recipe_video')) $table->dropColumn('recipe_video');
+            if (Schema::hasColumn('recipes', 'average_rating')) $table->dropColumn(['average_rating', 'rating_count', 'view_count', 'like_count', 'comment_count']);
+            if (Schema::hasColumn('recipes', 'is_published')) $table->dropColumn('is_published');
+            if (Schema::hasColumn('recipes', 'deleted_at')) $table->dropColumn('deleted_at');
         });
     }
 };
