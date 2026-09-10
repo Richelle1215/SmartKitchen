@@ -169,8 +169,25 @@
                 Publish Recipe
             </button>
         </div>
+
+        <!-- Hidden field for publishing -->
+        <input type="hidden" name="is_published" value="1">
     </form>
 </div>
+
+<!-- Validation Errors Display -->
+@if ($errors->any())
+    <div class="max-w-7xl mx-auto px-8 py-4 mt-4">
+        <div class="bg-red-50 border-l-4 border-red-500 p-4">
+            <h3 class="font-semibold text-red-800 mb-2">Validation Errors:</h3>
+            <ul class="list-disc list-inside text-red-700 text-sm">
+                @foreach ($errors->all() as $error)
+                    <li>{{ $error }}</li>
+                @endforeach
+            </ul>
+        </div>
+    </div>
+@endif
 
 <script>
 let ingredientCount = 1;
