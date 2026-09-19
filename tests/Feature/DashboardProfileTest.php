@@ -104,7 +104,59 @@ class DashboardProfileTest extends TestCase
     }
 
     /**
-     * Test 7: User can upload profile picture
+     * Test 7: Profile picture upload form is not nested inside the main profile form.
+     */
+    public function test_profile_picture_upload_form_is_not_nested_in_profile_form()
+    {
+        $user = User::factory()->create();
+
+        $response = $this->actingAs($user)->get('/profile');
+
+        $response->assertOk();
+
+        $dom = new \DOMDocument();
+        libxml_use_internal_errors(true);
+        $dom->loadHTML($response->getContent());
+        libxml_clear_errors();
+
+        $updateForm = null;
+        $uploadForm = null;
+
+        foreach ($dom->getElementsByTagName('form') as $form) {
+            $action = $form->getAttribute('action');
+
+            if (str_contains($action, '/profile')) {
+                $updateForm = $form;
+            }
+
+            if (str_contains($action, '/profile/upload-picture')) {
+                $uploadForm = $form;
+            }
+        }
+
+        $this->assertNotNull($updateForm);
+        $this->assertNotNull($uploadForm);
+
+        $this->assertFalse($this->isDescendantOf($uploadForm, $updateForm));
+    }
+
+    protected function isDescendantOf(\DOMNode $node, \DOMNode $ancestor): bool
+    {
+        $current = $node->parentNode;
+
+        while ($current !== null) {
+            if ($current === $ancestor) {
+                return true;
+            }
+
+            $current = $current->parentNode;
+        }
+
+        return false;
+    }
+
+    /**
+     * Test 8: User can upload profile picture
      */
     public function test_user_can_upload_profile_picture()
     {

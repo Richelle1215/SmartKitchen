@@ -60,9 +60,10 @@ class CommentController extends Controller
         }
 
         // Update user statistics
-        if ($recipe->user->statistics) {
-            $recipe->user->statistics->increment('total_comments_received');
-        }
+        $stats = $recipe->user->statistics()->firstOrCreate([
+            'user_id' => $recipe->user_id,
+        ]);
+        $stats->increment('total_comments_received');
 
         return redirect()->route('recipes.show', $recipe)
                        ->with('success', 'Comment posted successfully!');

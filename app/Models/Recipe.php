@@ -16,6 +16,7 @@ class Recipe extends Model
     protected $fillable = [
         'user_id',
         'category_id',
+        'recipe_category_id',
         'title',
         'description',
         'prep_time',
@@ -30,6 +31,17 @@ class Recipe extends Model
         'comment_count',
         'is_published',
     ];
+
+    protected static function booted(): void
+    {
+        static::saving(function (self $recipe): void {
+            if (empty($recipe->category_id) && !empty($recipe->recipe_category_id)) {
+                $recipe->category_id = $recipe->recipe_category_id;
+            }
+
+            unset($recipe->recipe_category_id);
+        });
+    }
 
     protected $casts = [
         'prep_time' => 'integer',
@@ -81,6 +93,12 @@ class Recipe extends Model
     }
 
     public function favoritedByUsers(): BelongsToMany
+    {
+        return $this->belongsToMany(User::class, 'favorites', 'recipe_id', 'user_id')
+            ->withTimestamps();
+    }
+
+    public function favorites(): BelongsToMany
     {
         return $this->belongsToMany(User::class, 'favorites', 'recipe_id', 'user_id')
             ->withTimestamps();

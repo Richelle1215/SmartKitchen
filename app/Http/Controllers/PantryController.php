@@ -13,6 +13,11 @@ class PantryController extends Controller
     public function index()
     {
         $user = auth()->user();
+
+        if (! $user) {
+            return view('features.pantry');
+        }
+
         $items = $user->pantryItems()
                       ->orderBy('category')
                       ->paginate(12);
@@ -136,44 +141,125 @@ class PantryController extends Controller
         $user = auth()->user();
 
         $pantryItems = $user->pantryItems()
-                            ->where('quantity', '>', 0)
-                            ->pluck('ingredient_name')
-                            ->toArray();
+            ->where('quantity', '>', 0)
+            ->get()
+            ->mapWithKeys(function ($item) {
+                return [strtolower(trim($item->ingredient_name)) => $item];
+            });
 
-        if (empty($pantryItems)) {
+        if ($pantryItems->isEmpty()) {
             return response()->json([
                 'message' => 'Add items to your pantry to get recipe suggestions',
+                'can_make' => [],
+                'almost_can_make' => [],
                 'recipes' => [],
             ]);
         }
 
-        $recipes = \App\Models\Recipe::where('is_published', true)
-                                     ->with('ingredients')
-                                     ->get()
-                                     ->map(function ($recipe) use ($pantryItems) {
-                                         $recipeIngredients = $recipe->ingredients->pluck('ingredient_name')->toArray();
-                                         $matches = array_intersect($pantryItems, $recipeIngredients);
-                                         $matchPercentage = count($recipeIngredients) > 0 
-                                             ? round((count($matches) / count($recipeIngredients)) * 100)
-                                             : 0;
+        $canMake = [];
+        $almostCanMake = [];
 
-                                         return [
-                                             'id' => $recipe->id,
-                                             'title' => $recipe->title,
-                                             'url' => route('recipes.show', $recipe),
-                                             'match_percentage' => $matchPercentage,
-                                             'match_count' => count($matches),
-                                             'total_ingredients' => count($recipeIngredients),
-                                         ];
-                                     })
-                                     ->filter(fn($item) => $item['match_percentage'] > 0)
-                                     ->sortByDesc('match_percentage')
-                                     ->take(6)
-                                     ->values();
+        \App\Models\Recipe::where('is_published', true)
+            ->with('ingredients')
+            ->get()
+            ->each(function ($recipe) use ($pantryItems, &$canMake, &$almostCanMake) {
+                $recipeIngredients = $recipe->ingredients->all();
+
+                if (empty($recipeIngredients)) {
+                    return;
+                }
+
+                $missingIngredients = [];
+                $matchCount = 0;
+
+                foreach ($recipeIngredients as $ingredient) {
+                    $name = trim((string) $ingredient->ingredient_name);
+                    $key = strtolower($name);
+
+                    if ($pantryItems->has($key)) {
+                        $matchCount++;
+                        continue;
+                    }
+
+                    $missingIngredients[] = $name;
+                }
+
+                $recipeData = [
+                    'id' => $recipe->id,
+                    'title' => $recipe->title,
+                    'url' => route('recipes.show', $recipe),
+                    'match_count' => $matchCount,
+                    'total_ingredients' => count($recipeIngredients),
+                    'match_percentage' => count($recipeIngredients) > 0
+                        ? round(($matchCount / count($recipeIngredients)) * 100)
+                        : 0,
+                    'missing_ingredients' => $missingIngredients,
+                ];
+
+                if (count($missingIngredients) <= 1) {
+                    $canMake[] = $recipeData;
+                    return;
+                }
+
+                $almostCanMake[] = $recipeData;
+            });
+
+        $recipes = \App\Models\Recipe::where('is_published', true)
+            ->with('ingredients')
+            ->get();
+
+        foreach ($recipes as $recipe) {
+            $ingredients = $recipe->ingredients->all();
+
+            if (empty($ingredients)) {
+                continue;
+            }
+
+            $missingIngredients = [];
+            foreach ($ingredients as $ingredient) {
+                $key = strtolower(trim((string) $ingredient->ingredient_name));
+                if (! $pantryItems->has($key)) {
+                    $missingIngredients[] = trim((string) $ingredient->ingredient_name);
+                }
+            }
+
+            if ($missingIngredients === []) {
+                continue;
+            }
+
+            $alreadyInCanMake = collect($canMake)->contains(fn ($item) => (int) $item['id'] === (int) $recipe->id);
+            $alreadyInAlmostMake = collect($almostCanMake)->contains(fn ($item) => (int) $item['id'] === (int) $recipe->id);
+
+            if ($alreadyInCanMake || $alreadyInAlmostMake) {
+                continue;
+            }
+
+            $almostCanMake[] = [
+                'id' => $recipe->id,
+                'title' => $recipe->title,
+                'url' => route('recipes.show', $recipe),
+                'match_count' => count($ingredients) - count($missingIngredients),
+                'total_ingredients' => count($ingredients),
+                'match_percentage' => count($ingredients) > 0 ? round(((count($ingredients) - count($missingIngredients)) / count($ingredients)) * 100) : 0,
+                'missing_ingredients' => $missingIngredients,
+            ];
+        }
+
+        $canMake = collect($canMake)
+            ->sortByDesc('match_count')
+            ->values()
+            ->all();
+
+        $almostCanMake = collect($almostCanMake)
+            ->sortByDesc('match_count')
+            ->values()
+            ->all();
 
         return response()->json([
             'message' => 'Based on your pantry, here are recipes you can make:',
-            'recipes' => $recipes,
+            'can_make' => $canMake,
+            'almost_can_make' => $almostCanMake,
+            'recipes' => array_merge($canMake, $almostCanMake),
         ]);
     }
 }

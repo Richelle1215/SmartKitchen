@@ -101,7 +101,7 @@ class CollectionController extends Controller
     {
         $this->authorize('delete', $collection);
 
-        $collection->delete();
+        $collection->forceDelete();
 
         return redirect()->route('collections.index')
                        ->with('success', 'Collection deleted successfully!');

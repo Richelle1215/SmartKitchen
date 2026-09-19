@@ -23,19 +23,23 @@ class FollowController extends Controller
         if ($currentUser->isFollowing($user)) {
             // Unfollow
             $currentUser->following()->detach($user->id);
-            
-            // Update statistics
-            $currentUser->statistics->decrement('total_following');
-            $user->statistics->decrement('total_followers');
-            
+
+            $followerStats = $currentUser->statistics()->firstOrCreate(['user_id' => $currentUser->id]);
+            $targetStats = $user->statistics()->firstOrCreate(['user_id' => $user->id]);
+
+            $followerStats->decrement('total_following');
+            $targetStats->decrement('total_followers');
+
             $message = 'Unfollowed!';
         } else {
             // Follow
             $currentUser->following()->attach($user->id);
-            
-            // Update statistics
-            $currentUser->statistics->increment('total_following');
-            $user->statistics->increment('total_followers');
+
+            $followerStats = $currentUser->statistics()->firstOrCreate(['user_id' => $currentUser->id]);
+            $targetStats = $user->statistics()->firstOrCreate(['user_id' => $user->id]);
+
+            $followerStats->increment('total_following');
+            $targetStats->increment('total_followers');
 
             // Create notification
             Notification::create([

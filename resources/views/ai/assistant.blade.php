@@ -1,188 +1,152 @@
 @extends('layouts.app')
 
 @section('content')
-<div class="min-h-screen bg-gradient-to-br from-orange-50 via-white to-orange-50 py-12">
-    <div class="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8">
-        <!-- Header -->
-        <div class="mb-8 text-center">
-            <h1 class="text-4xl font-bold text-gray-900 mb-2 flex items-center justify-center">
-                <span class="text-5xl mr-3">🤖</span>
-                AI Cooking Assistant
-            </h1>
-            <p class="text-gray-600 text-lg">Get help with recipes, cooking techniques, and ingredient substitutions</p>
+@php
+    $liveAiEnabled = app(\App\Services\AIService::class)->isLiveEnabled();
+@endphp
+<div class="mx-auto max-w-5xl px-4 py-10 sm:px-6 lg:px-8">
+    <div class="mb-6">
+        <p class="text-sm font-semibold uppercase tracking-[0.2em] text-orange-600">SmartKitchen</p>
+        <h1 class="mt-2 text-4xl font-bold text-gray-900">AI Cooking Assistant</h1>
+        <p class="mt-2 text-gray-600">
+            @auth
+                Full AI assistance is available for your account.
+            @else
+                Guest mode is limited to quick cooking guidance and sample suggestions.
+            @endauth
+        </p>
+        <div class="mt-4 flex items-center gap-3">
+            <span id="assistant-status" class="inline-flex items-center rounded-full px-3 py-1 text-xs font-semibold {{ $liveAiEnabled ? 'bg-emerald-100 text-emerald-700' : 'bg-amber-100 text-amber-700' }}">
+                {{ $liveAiEnabled ? 'Live AI mode' : 'Fallback mode' }}
+            </span>
+            <span id="assistant-status-detail" class="text-sm {{ $liveAiEnabled ? 'text-emerald-700' : 'text-amber-700' }}">
+                {{ $liveAiEnabled ? 'Connected to OpenAI.' : 'Using built-in cooking guidance.' }}
+            </span>
         </div>
+    </div>
 
-        <!-- Main Chat Interface -->
-        <div class="bg-white rounded-lg shadow-xl overflow-hidden mb-8">
-            <!-- Chat History -->
-            <div id="chat-history" class="h-96 overflow-y-auto p-6 bg-gray-50 border-b border-gray-200 space-y-4">
-                <div class="flex gap-3">
-                    <div class="w-8 h-8 rounded-full bg-orange-500 flex items-center justify-center text-white text-sm font-bold flex-shrink-0">
-                        🤖
-                    </div>
-                    <div class="bg-white rounded-lg p-4 shadow-sm max-w-xs">
-                        <p class="text-gray-800 text-sm">👋 Hi! I'm your AI Cooking Assistant. How can I help you today? I can help with:</p>
-                        <ul class="text-sm text-gray-700 mt-2 space-y-1">
-                            <li>🔄 Ingredient substitutions</li>
-                            <li>👨‍🍳 Cooking techniques and tips</li>
-                            <li>🥘 Recipe suggestions</li>
-                            <li>📊 Nutritional information</li>
-                            <li>🥗 Pantry-based recipes</li>
-                        </ul>
+    <div class="grid gap-6 lg:grid-cols-[320px_1fr]">
+        <aside class="rounded-2xl border border-gray-200 bg-white p-4 shadow-sm">
+            <h2 class="text-lg font-semibold text-gray-900">Quick prompts</h2>
+            <div class="mt-4 space-y-2">
+                <button type="button" class="quick-prompt w-full rounded-xl border border-orange-200 bg-orange-50 px-3 py-2 text-left text-sm font-medium text-orange-700 hover:bg-orange-100">I only have eggs, rice, and garlic.</button>
+                <button type="button" class="quick-prompt w-full rounded-xl border border-gray-200 bg-gray-50 px-3 py-2 text-left text-sm text-gray-700 hover:bg-gray-100">I don't have soy sauce.</button>
+                <button type="button" class="quick-prompt w-full rounded-xl border border-gray-200 bg-gray-50 px-3 py-2 text-left text-sm text-gray-700 hover:bg-gray-100">What can I cook with tomatoes and pasta?</button>
+                <button type="button" class="quick-prompt w-full rounded-xl border border-gray-200 bg-gray-50 px-3 py-2 text-left text-sm text-gray-700 hover:bg-gray-100">How do I make rice less sticky?</button>
+                <button type="button" class="quick-prompt w-full rounded-xl border border-gray-200 bg-gray-50 px-3 py-2 text-left text-sm text-gray-700 hover:bg-gray-100">Give me nutrition tips for a balanced meal.</button>
+            </div>
+        </aside>
+
+        <div class="overflow-hidden rounded-2xl border border-gray-200 bg-white shadow-sm">
+            <div class="border-b border-gray-200 bg-gray-50 px-5 py-4">
+                <div class="flex items-center justify-between">
+                    <h2 class="text-lg font-semibold text-gray-900">Chef chat</h2>
+                    <span class="rounded-full bg-orange-100 px-2.5 py-1 text-xs font-semibold text-orange-700">
+                        {{ auth()->check() ? 'Registered user' : 'Guest' }}
+                    </span>
+                </div>
+            </div>
+
+            <div id="ai-chat" class="h-[470px] space-y-4 overflow-y-auto bg-white p-5">
+                <div class="flex justify-start">
+                    <div class="max-w-xl rounded-2xl rounded-tl-none bg-gray-100 px-4 py-3 text-sm text-gray-700">
+                        Ask for recipe ideas, substitutions, cooking tips, nutrition help, or quick troubleshooting.
                     </div>
                 </div>
             </div>
 
-            <!-- Input Area -->
-            <div class="p-6 bg-white">
-                <form id="chat-form" class="flex gap-3">
-                    <input type="text" id="message-input" placeholder="Ask me anything about cooking..." 
-                           class="flex-1 px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-orange-500"
-                           autocomplete="off">
-                    <button type="submit" class="px-6 py-3 bg-orange-500 hover:bg-orange-600 text-white font-medium rounded-lg transition">
+            <div class="border-t border-gray-200 p-4">
+                <form id="ai-form" class="flex gap-3">
+                    @csrf
+                    <input
+                        id="ai-message"
+                        type="text"
+                        name="message"
+                        placeholder="Ask the kitchen assistant..."
+                        class="w-full rounded-xl border border-gray-300 bg-gray-50 px-4 py-3 text-gray-900 shadow-sm focus:border-orange-400 focus:outline-none focus:ring-2 focus:ring-orange-200"
+                    >
+                    <button type="submit" class="rounded-xl bg-orange-500 px-5 py-3 font-semibold text-white hover:bg-orange-600 disabled:cursor-not-allowed disabled:bg-orange-300">
                         Send
                     </button>
                 </form>
-            </div>
-        </div>
-
-        <!-- Quick Actions -->
-        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 mb-8">
-            <button onclick="askAssistant('What are some substitutes for butter?')" 
-                    class="bg-white rounded-lg shadow p-4 hover:shadow-lg transition text-left">
-                <div class="text-3xl mb-2">🔄</div>
-                <h3 class="font-bold text-gray-900">Substitutions</h3>
-                <p class="text-sm text-gray-600">Find ingredient alternatives</p>
-            </button>
-
-            <button onclick="askAssistant('Give me cooking tips for grilling')" 
-                    class="bg-white rounded-lg shadow p-4 hover:shadow-lg transition text-left">
-                <div class="text-3xl mb-2">👨‍🍳</div>
-                <h3 class="font-bold text-gray-900">Cooking Tips</h3>
-                <p class="text-sm text-gray-600">Learn techniques & best practices</p>
-            </button>
-
-            @auth
-                <button onclick="window.location.href='{{ route('pantry.index') }}'" 
-                        class="bg-white rounded-lg shadow p-4 hover:shadow-lg transition text-left">
-                    <div class="text-3xl mb-2">📦</div>
-                    <h3 class="font-bold text-gray-900">My Pantry</h3>
-                    <p class="text-sm text-gray-600">Manage your ingredients</p>
-                </button>
-            @else
-                <a href="{{ route('login') }}" 
-                   class="bg-white rounded-lg shadow p-4 hover:shadow-lg transition text-left">
-                    <div class="text-3xl mb-2">📦</div>
-                    <h3 class="font-bold text-gray-900">My Pantry</h3>
-                    <p class="text-sm text-gray-600">Login to use pantry</p>
-                </a>
-            @endauth
-
-            <button onclick="askAssistant('How do I calculate nutrition facts?')" 
-                    class="bg-white rounded-lg shadow p-4 hover:shadow-lg transition text-left">
-                <div class="text-3xl mb-2">📊</div>
-                <h3 class="font-bold text-gray-900">Nutrition</h3>
-                <p class="text-sm text-gray-600">Get nutritional information</p>
-            </button>
-        </div>
-
-        <!-- Features Section -->
-        <div class="bg-white rounded-lg shadow-lg p-8">
-            <h2 class="text-2xl font-bold text-gray-900 mb-6">How I Can Help</h2>
-            <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
-                <div>
-                    <h3 class="font-bold text-gray-900 mb-2 flex items-center">
-                        <span class="text-2xl mr-2">🔄</span>
-                        Ingredient Substitutions
-                    </h3>
-                    <p class="text-gray-600">Can't find an ingredient? I'll suggest alternatives with the right ratios.</p>
-                </div>
-                <div>
-                    <h3 class="font-bold text-gray-900 mb-2 flex items-center">
-                        <span class="text-2xl mr-2">👨‍🍳</span>
-                        Cooking Techniques
-                    </h3>
-                    <p class="text-gray-600">Learn proper techniques for boiling, frying, baking, grilling, steaming, and more.</p>
-                </div>
-                <div>
-                    <h3 class="font-bold text-gray-900 mb-2 flex items-center">
-                        <span class="text-2xl mr-2">🥘</span>
-                        Recipe Suggestions
-                    </h3>
-                    <p class="text-gray-600">Tell me what you have, and I'll suggest recipes you can make right now.</p>
-                </div>
-                <div>
-                    <h3 class="font-bold text-gray-900 mb-2 flex items-center">
-                        <span class="text-2xl mr-2">📊</span>
-                        Nutrition Facts
-                    </h3>
-                    <p class="text-gray-600">Calculate calories, protein, carbs, and fat for any recipe.</p>
-                </div>
             </div>
         </div>
     </div>
 </div>
 
 <script>
-function askAssistant(message) {
-    document.getElementById('message-input').value = message;
-    document.getElementById('chat-form').dispatchEvent(new Event('submit'));
-}
+    const chatBox = document.getElementById('ai-chat');
+    const form = document.getElementById('ai-form');
+    const input = document.getElementById('ai-message');
+    const sendButton = form.querySelector('button[type="submit"]');
+    const statusBadge = document.getElementById('assistant-status');
+    const statusDetail = document.getElementById('assistant-status-detail');
 
-document.getElementById('chat-form').addEventListener('submit', async (e) => {
-    e.preventDefault();
-    
-    const message = document.getElementById('message-input').value;
-    if (!message.trim()) return;
-
-    // Add user message to chat
-    const chatHistory = document.getElementById('chat-history');
-    const userMessageDiv = document.createElement('div');
-    userMessageDiv.className = 'flex gap-3 justify-end';
-    userMessageDiv.innerHTML = `
-        <div class="bg-orange-500 text-white rounded-lg p-4 shadow-sm max-w-xs">
-            <p class="text-sm">${message}</p>
-        </div>
-        <div class="w-8 h-8 rounded-full bg-blue-500 flex items-center justify-center text-white text-sm font-bold flex-shrink-0">
-            👤
-        </div>
-    `;
-    chatHistory.appendChild(userMessageDiv);
-
-    // Clear input
-    document.getElementById('message-input').value = '';
-
-    // Send to server
-    try {
-        const response = await fetch('{{ route("ai.chat") }}', {
-            method: 'POST',
-            headers: {
-                'Content-Type': 'application/json',
-                'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').content
-            },
-            body: JSON.stringify({ message })
-        });
-
-        const data = await response.json();
-
-        // Add AI response
-        const aiMessageDiv = document.createElement('div');
-        aiMessageDiv.className = 'flex gap-3';
-        aiMessageDiv.innerHTML = `
-            <div class="w-8 h-8 rounded-full bg-orange-500 flex items-center justify-center text-white text-sm font-bold flex-shrink-0">
-                🤖
-            </div>
-            <div class="bg-white rounded-lg p-4 shadow-sm max-w-xs">
-                <p class="text-gray-800 text-sm">${data.response}</p>
-            </div>
-        `;
-        chatHistory.appendChild(aiMessageDiv);
-
-        // Scroll to bottom
-        chatHistory.scrollTop = chatHistory.scrollHeight;
-    } catch (error) {
-        console.error('Error:', error);
+    function updateStatus(success) {
+        const live = success === true;
+        statusBadge.textContent = live ? 'Live AI mode' : 'Fallback mode';
+        statusBadge.className = 'inline-flex items-center rounded-full px-3 py-1 text-xs font-semibold ' + (live ? 'bg-emerald-100 text-emerald-700' : 'bg-amber-100 text-amber-700');
+        statusDetail.textContent = live ? 'Connected to OpenAI.' : 'Using built-in cooking guidance.';
+        statusDetail.className = 'text-sm ' + (live ? 'text-emerald-700' : 'text-amber-700');
     }
-});
+
+    function addMessage(role, text) {
+        const wrapper = document.createElement('div');
+        wrapper.className = role === 'user' ? 'flex justify-end' : 'flex justify-start';
+
+        const bubble = document.createElement('div');
+        bubble.className = role === 'user'
+            ? 'max-w-xl rounded-2xl rounded-tr-none bg-orange-500 px-4 py-3 text-sm text-white'
+            : 'max-w-xl rounded-2xl rounded-tl-none bg-gray-100 px-4 py-3 text-sm text-gray-700';
+        bubble.textContent = text;
+
+        wrapper.appendChild(bubble);
+        chatBox.appendChild(wrapper);
+        chatBox.scrollTop = chatBox.scrollHeight;
+    }
+
+    form.addEventListener('submit', async function (event) {
+        event.preventDefault();
+
+        const message = input.value.trim();
+        if (!message) {
+            return;
+        }
+
+        addMessage('user', message);
+        input.value = '';
+        sendButton.disabled = true;
+
+        try {
+            const response = await fetch('{{ route('ai.chat') }}', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'X-CSRF-TOKEN': '{{ csrf_token() }}',
+                    'Accept': 'application/json'
+                },
+                body: JSON.stringify({ message })
+            });
+
+            const data = await response.json();
+            const responseText = data.success ? data.response : (data.error || 'The assistant is unavailable right now.');
+            updateStatus(Boolean(data.success));
+            addMessage('assistant', responseText);
+        } catch (error) {
+            updateStatus(false);
+            addMessage('assistant', 'The assistant could not be reached. Please try again in a moment.');
+        } finally {
+            sendButton.disabled = false;
+            input.focus();
+        }
+    });
+
+    document.querySelectorAll('.quick-prompt').forEach((button) => {
+        button.addEventListener('click', () => {
+            input.value = button.textContent.trim();
+            input.focus();
+            form.dispatchEvent(new Event('submit'));
+        });
+    });
 </script>
 @endsection

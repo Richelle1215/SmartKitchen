@@ -40,50 +40,27 @@
             @csrf
             @method('PATCH')
 
-        <!-- Profile Picture Upload -->
-        <div>
-            <label class="block text-sm font-medium text-gray-700 mb-2">Profile Picture</label>
-            <div class="flex items-center gap-6">
-                <!-- Current Picture -->
-                <div class="flex-shrink-0">
-                    @if ($user->profile_picture)
-                        <img src="{{ Storage::url($user->profile_picture) }}" alt="{{ $user->name }}" 
-                             class="w-24 h-24 rounded-full object-cover border-2 border-gray-300">
-                    @else
-                        <div class="w-24 h-24 rounded-full border-2 border-gray-300 bg-gray-200 flex items-center justify-center text-2xl font-bold text-gray-600">
-                            {{ strtoupper(substr($user->name, 0, 1)) }}
-                        </div>
-                    @endif
-                </div>
+            <div>
+                <label class="block text-sm font-medium text-gray-700 mb-2">Profile Picture</label>
+                <div class="flex items-center gap-6">
+                    <div class="flex-shrink-0">
+                        @if ($user->profile_picture)
+                            <img src="{{ Storage::url($user->profile_picture) }}" alt="{{ $user->name }}"
+                                 class="w-24 h-24 rounded-full object-cover border-2 border-gray-300">
+                        @else
+                            <div class="w-24 h-24 rounded-full border-2 border-gray-300 bg-gray-200 flex items-center justify-center text-2xl font-bold text-gray-600">
+                                {{ strtoupper(substr($user->name, 0, 1)) }}
+                            </div>
+                        @endif
+                    </div>
 
-                <!-- Upload Form -->
-                <div class="flex-grow">
-                    <form action="{{ route('profile.upload-picture') }}" method="POST" enctype="multipart/form-data" class="flex flex-col gap-3">
-                        @csrf
-                        <input 
-                            type="file"
-                            name="profile_picture"
-                            id="profile_picture"
-                            accept="image/*"
-                            class="block w-full text-sm text-gray-500 file:mr-4 file:py-2 file:px-4 file:rounded-lg file:border-0 file:text-sm file:font-semibold file:bg-blue-50 file:text-blue-700 hover:file:bg-blue-100"
-                            required
-                        />
-                        @error('profile_picture')
-                            <p class="text-sm text-red-600 flex items-center gap-1">
-                                <span>✗</span> {{ $message }}
-                            </p>
-                        @enderror
-                        <p class="text-xs text-gray-500">PNG, JPG or GIF (max. 2MB)</p>
-                        <button 
-                            type="submit"
-                            class="px-4 py-2 bg-blue-600 text-white font-semibold rounded-lg hover:bg-blue-700 transition duration-200 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 w-fit"
-                        >
-                            Upload Picture
-                        </button>
-                    </form>
+                    <div class="flex-grow">
+                        <p class="text-xs text-gray-500 mb-2">Upload a new photo without leaving this page.</p>
+                    </div>
                 </div>
             </div>
-        </div>
+
+            <div>
                 <label for="name" class="block text-sm font-medium text-gray-700 mb-2">Full Name</label>
                 <input 
                     id="name"
@@ -152,6 +129,35 @@
                 </a>
             </div>
         </form>
+
+        <div class="mt-8 border-t border-gray-200 pt-6">
+            <form action="{{ route('profile.upload-picture') }}" method="POST" enctype="multipart/form-data" class="flex flex-col gap-3 md:flex-row md:items-end">
+                @csrf
+                <div class="flex-1">
+                    <label for="profile_picture" class="block text-sm font-medium text-gray-700 mb-2">Profile Picture</label>
+                    <input
+                        type="file"
+                        name="profile_picture"
+                        id="profile_picture"
+                        accept="image/*"
+                        class="block w-full text-sm text-gray-500 file:mr-4 file:py-2 file:px-4 file:rounded-lg file:border-0 file:text-sm file:font-semibold file:bg-blue-50 file:text-blue-700 hover:file:bg-blue-100"
+                        required
+                    />
+                    @error('profile_picture')
+                        <p class="text-sm text-red-600 flex items-center gap-1 mt-2">
+                            <span>✗</span> {{ $message }}
+                        </p>
+                    @enderror
+                    <p class="text-xs text-gray-500 mt-1">PNG, JPG or GIF (max. 2MB)</p>
+                </div>
+                <button
+                    type="submit"
+                    class="px-4 py-2 bg-blue-600 text-white font-semibold rounded-lg hover:bg-blue-700 transition duration-200 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 w-fit"
+                >
+                    Upload Picture
+                </button>
+            </form>
+        </div>
     </div>
 
     <!-- Password Section -->

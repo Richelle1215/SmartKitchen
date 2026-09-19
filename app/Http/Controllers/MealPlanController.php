@@ -10,6 +10,55 @@ use Illuminate\Http\Request;
 class MealPlanController extends Controller
 {
     /**
+     * Weekly planner page with Monday-Sunday slots.
+     */
+    public function planner()
+    {
+        $user = auth()->user();
+        $startOfWeek = now()->startOfWeek();
+        $endOfWeek = $startOfWeek->copy()->addDays(6);
+
+        $mealPlan = $user->mealPlans()
+            ->where('start_date', '<=', $endOfWeek)
+            ->where('end_date', '>=', $startOfWeek)
+            ->first();
+
+        if (! $mealPlan) {
+            $mealPlan = MealPlan::create([
+                'user_id' => $user->id,
+                'name' => 'Weekly Planner',
+                'description' => 'This week\'s meals.',
+                'start_date' => $startOfWeek->toDateString(),
+                'end_date' => $endOfWeek->toDateString(),
+                'meal_type' => 'weekly',
+            ]);
+        }
+
+        $week = [];
+        foreach (range(0, 6) as $offset) {
+            $date = $startOfWeek->copy()->addDays($offset);
+            $week[$date->format('l')] = [
+                'date' => $date->format('Y-m-d'),
+                'breakfast' => null,
+                'lunch' => null,
+                'dinner' => null,
+            ];
+        }
+
+        $items = $mealPlan->items()->with('recipe')->get();
+        foreach ($items as $item) {
+            $dayName = \Carbon\Carbon::parse($item->meal_date)->format('l');
+            if (isset($week[$dayName]) && in_array($item->meal_type, ['breakfast', 'lunch', 'dinner'], true)) {
+                $week[$dayName][$item->meal_type] = $item;
+            }
+        }
+
+        $recipes = Recipe::where('is_published', true)->orderBy('title')->get();
+
+        return view('meal-plans.planner', compact('week', 'mealPlan', 'recipes'));
+    }
+
+    /**
      * Display meal plans
      */
     public function index()
@@ -169,10 +218,28 @@ class MealPlanController extends Controller
     {
         $this->authorize('update', $item->mealPlan);
 
-        $mealPlan = $item->mealPlan;
         $item->delete();
 
         return back()->with('success', 'Item removed!');
+    }
+
+    /**
+     * Update a meal item from the planner.
+     */
+    public function updateMealItem(Request $request, MealPlanItem $item)
+    {
+        $this->authorize('update', $item->mealPlan);
+
+        $validated = $request->validate([
+            'recipe_id' => ['required', 'exists:recipes,id'],
+            'meal_date' => ['required', 'date'],
+            'meal_type' => ['required', 'in:breakfast,lunch,dinner'],
+            'servings' => ['required', 'integer', 'min:1'],
+        ]);
+
+        $item->update($validated);
+
+        return back()->with('success', 'Meal updated!');
     }
 
     /**

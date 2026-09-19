@@ -66,11 +66,15 @@
             <!-- Right Side: Notifications, Profile, Auth Buttons -->
             <div class="hidden md:flex items-center gap-4">
                 @auth
+                    @php($unreadNotificationCount = auth()->user()->notifications()->whereNull('read_at')->count())
                     <!-- Notifications -->
-                    <a href="{{ route('messages.index') }}" class="relative px-2 py-1 text-gray-700 hover:text-gray-900">
+                    <a href="{{ route('notifications.index') }}" class="relative px-2 py-1 text-gray-700 hover:text-gray-900">
                         <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 17h5l-1.405-1.405A2.032 2.032 0 0118 15.071V11a6.002 6.002 0 00-4-5.659V5a2 2 0 10-4 0v.341C7.67 6.165 6 8.388 6 11v4.071a2.032 2.032 0 01-.595 1.524L4 17h5m6 0v1a3 3 0 11-6 0v-1m6 0H9"></path>
                         </svg>
+                        @if($unreadNotificationCount > 0)
+                            <span class="absolute -top-1 -right-1 inline-flex items-center justify-center min-w-5 h-5 px-1 text-[10px] font-bold text-white bg-red-500 rounded-full">{{ $unreadNotificationCount }}</span>
+                        @endif
                         <span class="sr-only">Notifications</span>
                     </a>
 
@@ -127,11 +131,15 @@
             <!-- Mobile Menu Toggle Button -->
             <div class="md:hidden flex items-center gap-4">
                 @auth
+                    @php($unreadNotificationCount = auth()->user()->notifications()->whereNull('read_at')->count())
                     <!-- Mobile Notifications -->
-                    <a href="{{ route('messages.index') }}" class="text-gray-700 hover:text-gray-900">
+                    <a href="{{ route('notifications.index') }}" class="relative text-gray-700 hover:text-gray-900">
                         <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 17h5l-1.405-1.405A2.032 2.032 0 0118 15.071V11a6.002 6.002 0 00-4-5.659V5a2 2 0 10-4 0v.341C7.67 6.165 6 8.388 6 11v4.071a2.032 2.032 0 01-.595 1.524L4 17h5m6 0v1a3 3 0 11-6 0v-1m6 0H9"></path>
                         </svg>
+                        @if($unreadNotificationCount > 0)
+                            <span class="absolute -top-1 -right-1 inline-flex items-center justify-center min-w-5 h-5 px-1 text-[10px] font-bold text-white bg-red-500 rounded-full">{{ $unreadNotificationCount }}</span>
+                        @endif
                     </a>
                 @endauth
                 <button @click="mobileMenuOpen = !mobileMenuOpen" class="text-gray-700 hover:text-gray-900">

@@ -61,4 +61,28 @@ class RecipePolicy
         // Only registered users can like, and cannot like their own recipes
         return $user->isRegistered() && $user->id !== $recipe->user_id;
     }
+
+    /**
+     * Determine whether the user can favorite the recipe.
+     */
+    public function favorite(User $user, Recipe $recipe): bool
+    {
+        return $user->isRegistered() && $user->id !== $recipe->user_id;
+    }
+
+    /**
+     * Determine whether the user can comment on a recipe.
+     */
+    public function comment(User $user, Recipe $recipe): bool
+    {
+        return $user->isRegistered();
+    }
+
+    /**
+     * Determine whether the user can rate a recipe.
+     */
+    public function rate(User $user, Recipe $recipe): bool
+    {
+        return $user->isRegistered() && $user->id !== $recipe->user_id;
+    }
 }

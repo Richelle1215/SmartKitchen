@@ -39,14 +39,14 @@ class CostCalculatorController extends Controller
         $totalCost = 0;
 
         if ($validated['recipe_id'] ?? false) {
-            // Use recipe ingredients
-            $recipe = Recipe::find($validated['recipe_id'])->load('ingredients');
-            
+            $recipe = Recipe::with('ingredients')->findOrFail($validated['recipe_id']);
+
             foreach ($recipe->ingredients as $ingredient) {
-                $cost = ($request->input("ingredient_prices.{$ingredient->id}") ?? 0);
+                $cost = (float) ($request->input("ingredient_prices.{$ingredient->id}") ?? 0);
                 $totalCost += $cost;
-                
+
                 $ingredients[] = [
+                    'id' => $ingredient->id,
                     'name' => $ingredient->ingredient_name,
                     'quantity' => $ingredient->quantity,
                     'unit' => $ingredient->unit,
@@ -55,22 +55,23 @@ class CostCalculatorController extends Controller
                 ];
             }
         } else {
-            // Use provided ingredients
             foreach ($validated['ingredients'] as $ingredient) {
-                $totalCost += $ingredient['price'];
-                
+                $cost = (float) ($ingredient['price'] ?? 0);
+                $totalCost += $cost;
+
                 $ingredients[] = [
                     'name' => $ingredient['name'],
                     'quantity' => $ingredient['quantity'],
-                    'price' => $ingredient['price'],
-                    'total' => $ingredient['price'],
+                    'price' => $cost,
+                    'total' => $cost,
                 ];
             }
         }
 
-        $costPerServing = $totalCost / $servings;
+        $costPerServing = $servings > 0 ? $totalCost / $servings : 0;
 
         return response()->json([
+            'currency' => '₱',
             'total_cost' => round($totalCost, 2),
             'cost_per_serving' => round($costPerServing, 2),
             'servings' => $servings,
@@ -89,10 +90,11 @@ class CostCalculatorController extends Controller
         $totalCost = 0;
 
         foreach ($recipe->ingredients as $ingredient) {
-            $cost = 0; // Default - user would provide actual prices
+            $cost = 0;
             $totalCost += $cost;
-            
+
             $breakdown[] = [
+                'id' => $ingredient->id,
                 'name' => $ingredient->ingredient_name,
                 'quantity' => $ingredient->quantity,
                 'unit' => $ingredient->unit,

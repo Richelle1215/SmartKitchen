@@ -98,6 +98,65 @@
             </aside>
         </main>
 
+        <section class="mt-20">
+            <div class="flex items-center justify-between gap-4 mb-8">
+                <div>
+                    <p class="text-sm uppercase tracking-[0.2em] text-orange-600 font-semibold">Community uploads</p>
+                    <h2 class="text-3xl font-bold text-stone-900">All uploaded recipes</h2>
+                </div>
+                <a href="{{ route('recipes.index') }}" class="hidden md:inline-flex items-center gap-2 text-sm font-medium text-stone-700 hover:text-stone-900">
+                    Browse all recipes
+                    <span aria-hidden="true">→</span>
+                </a>
+            </div>
+
+            @if($recipes->count() > 0)
+                <div class="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-6">
+                    @foreach($recipes as $recipe)
+                        <article class="bg-white rounded-3xl border border-stone-200 shadow-sm overflow-hidden hover:shadow-md transition">
+                            <div class="relative h-48 bg-stone-200 overflow-hidden">
+                                @if($recipe->recipe_image)
+                                    <img src="{{ asset('storage/' . $recipe->recipe_image) }}" alt="{{ $recipe->title }}" class="w-full h-full object-cover">
+                                @else
+                                    <div class="w-full h-full flex items-center justify-center bg-gradient-to-br from-orange-100 to-amber-100">
+                                        <svg class="w-16 h-16 text-orange-300" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z"></path>
+                                        </svg>
+                                    </div>
+                                @endif
+                                <div class="absolute top-3 right-3 bg-orange-500 text-white px-2.5 py-1 rounded-full text-xs font-semibold">
+                                    {{ $recipe->category->name ?? 'Uncategorized' }}
+                                </div>
+                            </div>
+
+                            <div class="p-5">
+                                <div class="flex items-center justify-between mb-2">
+                                    <span class="text-xs uppercase tracking-[0.2em] text-stone-500">{{ $recipe->prep_time ?? 0 }} min</span>
+                                    <span class="text-sm font-medium text-stone-600">{{ $recipe->servings ?? 2 }} servings</span>
+                                </div>
+                                <h3 class="text-xl font-bold text-stone-900 mb-2">{{ $recipe->title }}</h3>
+                                <p class="text-sm text-stone-600 mb-4 line-clamp-3">{{ $recipe->description }}</p>
+
+                                <div class="flex items-center justify-between pt-4 border-t border-stone-200">
+                                    <div class="flex items-center gap-2">
+                                        <div class="w-8 h-8 rounded-full bg-orange-100 flex items-center justify-center text-xs font-bold text-orange-700">
+                                            {{ strtoupper(substr($recipe->user->name ?? 'U', 0, 1)) }}
+                                        </div>
+                                        <span class="text-sm text-stone-700">{{ $recipe->user->name ?? 'Unknown' }}</span>
+                                    </div>
+                                    <a href="{{ route('recipes.show', $recipe) }}" class="text-orange-600 hover:text-orange-700 font-semibold">View</a>
+                                </div>
+                            </div>
+                        </article>
+                    @endforeach
+                </div>
+            @else
+                <div class="bg-white rounded-3xl border border-stone-200 p-12 text-center">
+                    <p class="text-lg text-stone-600">No recipes have been uploaded yet.</p>
+                </div>
+            @endif
+        </section>
+
         <section id="features" class="mt-20">
             <div class="flex items-center justify-between mb-8">
                 <div>

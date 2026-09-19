@@ -197,26 +197,35 @@ document.addEventListener('DOMContentLoaded', async () => {
             }
         });
         const data = await response.json();
-        
+
         const container = document.getElementById('recipe-suggestions');
-        
-        if (data.recipes.length > 0) {
-            container.innerHTML = data.recipes.map(recipe => `
-                <a href="${recipe.url}" class="bg-gradient-to-br from-orange-50 to-orange-100 rounded-lg p-4 hover:shadow-lg transition">
-                    <div class="font-bold text-gray-900 mb-2">${recipe.title}</div>
-                    <div class="text-sm text-gray-700 mb-2">
-                        <span class="inline-block bg-white px-2 py-1 rounded mr-2">
-                            ${recipe.match_count}/${recipe.total_ingredients} ingredients
-                        </span>
-                        <span class="inline-block font-bold ${recipe.match_percentage >= 80 ? 'text-green-600' : recipe.match_percentage >= 50 ? 'text-yellow-600' : 'text-orange-600'}">
-                            ${recipe.match_percentage}%
-                        </span>
-                    </div>
-                    <button type="button" class="text-orange-600 hover:text-orange-700 text-sm font-medium">
-                        View Recipe →
-                    </button>
-                </a>
-            `).join('');
+        const canMake = data.can_make || [];
+        const almostCanMake = data.almost_can_make || [];
+        const suggestions = [...canMake, ...almostCanMake];
+
+        if (suggestions.length > 0) {
+            const sections = [
+                canMake.length ? `<div class="col-span-full"><h3 class="font-bold text-gray-900 mb-3">Can make</h3><div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">${canMake.map(recipe => `
+                    <a href="${recipe.url}" class="bg-gradient-to-br from-green-50 to-green-100 rounded-lg p-4 hover:shadow-lg transition block">
+                        <div class="font-bold text-gray-900 mb-2">${recipe.title}</div>
+                        <div class="text-sm text-gray-700 mb-2">
+                            <span class="inline-block bg-white px-2 py-1 rounded mr-2">${recipe.match_count}/${recipe.total_ingredients} ingredients</span>
+                        </div>
+                        <div class="text-xs text-gray-600">Missing: ${recipe.missing_ingredients && recipe.missing_ingredients.length ? recipe.missing_ingredients.join(', ') : 'None'}</div>
+                    </a>
+                `).join('')}</div></div>` : '',
+                almostCanMake.length ? `<div class="col-span-full mt-6"><h3 class="font-bold text-gray-900 mb-3">Almost can make</h3><div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">${almostCanMake.map(recipe => `
+                    <a href="${recipe.url}" class="bg-gradient-to-br from-yellow-50 to-yellow-100 rounded-lg p-4 hover:shadow-lg transition block">
+                        <div class="font-bold text-gray-900 mb-2">${recipe.title}</div>
+                        <div class="text-sm text-gray-700 mb-2">
+                            <span class="inline-block bg-white px-2 py-1 rounded mr-2">${recipe.match_count}/${recipe.total_ingredients} ingredients</span>
+                        </div>
+                        <div class="text-xs text-gray-600">Missing: ${recipe.missing_ingredients && recipe.missing_ingredients.length ? recipe.missing_ingredients.join(', ') : 'None'}</div>
+                    </a>
+                `).join('')}</div></div>` : ''
+            ].filter(Boolean).join('');
+
+            container.innerHTML = sections;
         } else {
             container.innerHTML = '<p class="text-gray-500 text-center py-8 col-span-full">Add items to your pantry to get recipe suggestions</p>';
         }

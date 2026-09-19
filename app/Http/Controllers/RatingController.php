@@ -46,10 +46,10 @@ class RatingController extends Controller
         }
 
         // Update user statistics
-        if (!$recipe->user->statistics) {
-            $recipe->user->statistics()->create();
-        }
-        $recipe->user->statistics->update([
+        $stats = $recipe->user->statistics()->firstOrCreate([
+            'user_id' => $recipe->user_id,
+        ]);
+        $stats->update([
             'total_ratings_received' => $recipe->ratings()->count(),
             'average_rating' => $recipe->average_rating,
         ]);

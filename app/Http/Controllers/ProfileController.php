@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Http\Requests\ProfileUpdateRequest;
+use App\Models\User;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
@@ -39,12 +40,25 @@ class ProfileController extends Controller
     public function show(Request $request): View
     {
         $user = $request->user();
-        
+
         return view('profile.show', [
             'user' => $user,
             'recipeCount' => $user->recipes()->count(),
             'followersCount' => $user->followers()->count(),
             'followingCount' => $user->following()->count(),
+        ]);
+    }
+
+    /**
+     * Display any user's public profile.
+     */
+    public function publicProfile(User $user): View
+    {
+        return view('users.profile', [
+            'user' => $user,
+            'followersCount' => $user->followers()->count(),
+            'followingCount' => $user->following()->count(),
+            'recipeCount' => $user->recipes()->where('is_published', true)->count(),
         ]);
     }
 

@@ -44,11 +44,12 @@ class LikeController extends Controller
         }
 
         // Update user statistics
-        if ($recipe->user->statistics) {
-            $recipe->user->statistics->update([
-                'total_likes_received' => $recipe->likedByUsers()->count(),
-            ]);
-        }
+        $stats = $recipe->user->statistics()->firstOrCreate([
+            'user_id' => $recipe->user_id,
+        ]);
+        $stats->update([
+            'total_likes_received' => $recipe->likedByUsers()->count(),
+        ]);
 
         return back()->with('success', $message);
     }

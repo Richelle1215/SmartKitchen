@@ -3,6 +3,7 @@
 use App\Http\Controllers\ProfileController;
 use App\Http\Controllers\RecipeController;
 use App\Http\Controllers\SearchController;
+use App\Models\Recipe;
 use App\Http\Controllers\CategoriesController;
 use App\Http\Controllers\RatingController;
 use App\Http\Controllers\CommentController;
@@ -24,7 +25,12 @@ use Illuminate\Support\Facades\Route;
 
 // Public routes
 Route::get('/', function () {
-    return view('home');
+    $recipes = Recipe::where('is_published', true)
+        ->with(['user', 'category', 'ratings'])
+        ->latest()
+        ->get();
+
+    return view('home', compact('recipes'));
 })->name('home');
 
 // Search and Discovery (public)
@@ -45,11 +51,11 @@ Route::get('/recipes/user/{userId}', [RecipeController::class, 'userRecipes'])->
 Route::get('/recipes/{recipe}', [RecipeController::class, 'show'])->name('recipes.show');
 
 // Feature pages
-Route::view('/pantry', 'features.pantry')->name('pantry');
 Route::view('/planner', 'features.planner')->name('planner');
 Route::view('/assistant', 'features.assistant')->name('assistant');
 Route::view('/community', 'features.community')->name('community');
 Route::view('/admin', 'features.admin')->name('admin');
+Route::get('/pantry', [PantryController::class, 'index'])->name('pantry.index');
 
 // Dashboard - Redirect to Profile (My Profile Page)
 Route::get('/dashboard', function () {
@@ -106,24 +112,21 @@ Route::middleware('auth')->group(function () {
     Route::delete('/collections/{collection}/recipes/{recipe}', [CollectionController::class, 'removeRecipe'])->name('collections.remove-recipe');
 
     // Community features - Follow
+    Route::get('/users/{user}', [ProfileController::class, 'publicProfile'])->name('users.profile');
     Route::post('/users/{user}/follow', [FollowController::class, 'store'])->name('users.follow');
     Route::get('/users/{user}/followers', [FollowController::class, 'followers'])->name('users.followers');
     Route::get('/users/{user}/following', [FollowController::class, 'following'])->name('users.following');
     Route::get('/users/{user}/follow-status', [FollowController::class, 'status'])->name('users.follow-status');
 
+    // Notifications
+    Route::get('/notifications', [\App\Http\Controllers\NotificationController::class, 'index'])->name('notifications.index');
+    Route::patch('/notifications/{notification}/read', [\App\Http\Controllers\NotificationController::class, 'markAsRead'])->name('notifications.read');
+    Route::post('/notifications/mark-all-read', [\App\Http\Controllers\NotificationController::class, 'markAllAsRead'])->name('notifications.mark-all-read');
+
     // Recommendations (personalized discovery)
     Route::get('/recommendations', [SearchController::class, 'recommendations'])->name('search.recommendations');
 
-    // AI Cooking Assistant
-    Route::get('/ai-assistant', [AIAssistantController::class, 'index'])->name('ai.assistant');
-    Route::post('/ai/chat', [AIAssistantController::class, 'chat'])->name('ai.chat');
-    Route::post('/ai/substitutions', [AIAssistantController::class, 'getSubstitutions'])->name('ai.substitutions');
-    Route::post('/ai/tips', [AIAssistantController::class, 'getTips'])->name('ai.tips');
-    Route::post('/ai/nutrition', [AIAssistantController::class, 'getNutritionInfo'])->name('ai.nutrition');
-    Route::get('/ai/suggest-recipes', [AIAssistantController::class, 'suggestRecipes'])->name('ai.suggest-recipes');
-
     // Smart Pantry
-    Route::get('/pantry', [PantryController::class, 'index'])->name('pantry.index');
     Route::post('/pantry', [PantryController::class, 'store'])->name('pantry.store');
     Route::patch('/pantry/{item}', [PantryController::class, 'update'])->name('pantry.update');
     Route::delete('/pantry/{item}', [PantryController::class, 'destroy'])->name('pantry.destroy');
@@ -133,6 +136,7 @@ Route::middleware('auth')->group(function () {
     Route::get('/pantry/suggest-recipes', [PantryController::class, 'suggestRecipes'])->name('pantry.suggest-recipes');
 
     // Meal Planner
+    Route::get('/meal-planner', [MealPlanController::class, 'planner'])->name('meal-planner');
     Route::get('/meal-plans', [MealPlanController::class, 'index'])->name('meal-plans.index');
     Route::get('/meal-plans/create', [MealPlanController::class, 'create'])->name('meal-plans.create');
     Route::post('/meal-plans', [MealPlanController::class, 'store'])->name('meal-plans.store');
@@ -141,6 +145,7 @@ Route::middleware('auth')->group(function () {
     Route::patch('/meal-plans/{mealPlan}', [MealPlanController::class, 'update'])->name('meal-plans.update');
     Route::delete('/meal-plans/{mealPlan}', [MealPlanController::class, 'destroy'])->name('meal-plans.destroy');
     Route::post('/meal-plans/{mealPlan}/items', [MealPlanController::class, 'addItem'])->name('meal-plans.add-item');
+    Route::patch('/meal-plan-items/{item}', [MealPlanController::class, 'updateMealItem'])->name('meal-plans.update-item');
     Route::delete('/meal-plan-items/{item}', [MealPlanController::class, 'removeItem'])->name('meal-plans.remove-item');
     Route::get('/meal-plans/weekly/suggestion', [MealPlanController::class, 'generateWeekly'])->name('meal-plans.weekly-suggestion');
     Route::get('/meal-plans/{mealPlan}/shopping-list', [MealPlanController::class, 'shoppingList'])->name('meal-plans.shopping-list');
@@ -149,6 +154,9 @@ Route::middleware('auth')->group(function () {
     Route::get('/cost-calculator', [CostCalculatorController::class, 'index'])->name('cost-calculator.index');
     Route::post('/cost-calculator/calculate', [CostCalculatorController::class, 'calculate'])->name('cost-calculator.calculate');
     Route::get('/recipes/{recipe}/cost', [CostCalculatorController::class, 'recipeCost'])->name('recipes.cost');
+
+    Route::get('/nutrition-analysis', [\App\Http\Controllers\NutritionController::class, 'index'])->name('nutrition-analysis.index');
+    Route::post('/nutrition-analysis', [\App\Http\Controllers\NutritionController::class, 'analyze'])->name('nutrition-analysis.analyze');
 
     // Video Shorts
     Route::get('/shorts', [VideoShortController::class, 'index'])->name('video-shorts.index');
@@ -182,6 +190,14 @@ Route::middleware('auth')->group(function () {
     Route::post('/report', [ReportController::class, 'store'])->name('reports.store');
     Route::get('/report/statistics', [ReportController::class, 'statistics'])->name('reports.statistics');
 });
+
+// AI Cooking Assistant (public page, guest-limited mode, registered full)
+Route::get('/ai-assistant', [AIAssistantController::class, 'index'])->name('ai.assistant');
+Route::post('/ai/chat', [AIAssistantController::class, 'chat'])->name('ai.chat');
+Route::post('/ai/substitutions', [AIAssistantController::class, 'getSubstitutions'])->name('ai.substitutions');
+Route::post('/ai/tips', [AIAssistantController::class, 'getTips'])->name('ai.tips');
+Route::post('/ai/nutrition', [AIAssistantController::class, 'getNutritionInfo'])->name('ai.nutrition');
+Route::get('/ai/suggest-recipes', [AIAssistantController::class, 'suggestRecipes'])->name('ai.suggest-recipes');
 
 // Admin Routes
 Route::middleware(['auth', 'admin'])->prefix('admin')->group(function () {

@@ -23,7 +23,6 @@ return new class extends Migration
             $table->softDeletes();
             
             $table->index('user_id');
-            $table->unique(['user_id', 'name']);
         });
 
         // Pivot table for recipe collections
