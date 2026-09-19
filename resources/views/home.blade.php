@@ -6,7 +6,7 @@
     <title>SmartKitchen</title>
     <script src="https://cdn.tailwindcss.com"></script>
 </head>
-<body class="bg-stone-100 text-stone-900">
+<body class="bg-gradient-to-br from-orange-50 via-stone-100 to-emerald-50 text-stone-900">
     <div class="max-w-7xl mx-auto px-4 py-8">
         <header class="flex justify-between items-center py-4 gap-6">
             <div class="flex items-center gap-3">
