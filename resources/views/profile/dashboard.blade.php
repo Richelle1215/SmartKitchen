@@ -67,6 +67,43 @@
         </div>
     </div>
 
+    <!-- Contribution Activity -->
+    <div class="bg-white rounded-lg shadow mb-8 p-6">
+        <div class="flex items-center justify-between mb-4">
+            <div>
+                <h2 class="text-2xl font-bold text-gray-900">Contribution Activity</h2>
+                <p class="text-gray-600 text-sm">Recipes, comments, ratings, and likes over the last year</p>
+            </div>
+            <span class="text-sm text-gray-500">{{ collect($contributions)->flatten(1)->sum('count') }} contributions</span>
+        </div>
+
+        <div class="overflow-x-auto pb-2">
+            <div class="min-w-[720px]">
+                <div class="flex gap-1">
+                    @foreach ($contributions as $week)
+                        <div class="flex flex-col gap-1">
+                            @foreach ($week as $cell)
+                                <div
+                                    class="w-3 h-3 rounded-sm bg-gray-100 {{ [1 => 'bg-green-200', 2 => 'bg-green-400', 3 => 'bg-green-600', 4 => 'bg-green-800'][$cell['level']] ?? '' }}"
+                                    title="{{ $cell['count'] }} contribution{{ $cell['count'] === 1 ? '' : 's' }} on {{ $cell['date'] }}"
+                                ></div>
+                            @endforeach
+                        </div>
+                    @endforeach
+                </div>
+                <div class="flex items-center justify-end gap-1 mt-3 text-xs text-gray-500">
+                    <span>Less</span>
+                    <span class="w-3 h-3 rounded-sm bg-gray-100"></span>
+                    <span class="w-3 h-3 rounded-sm bg-green-200"></span>
+                    <span class="w-3 h-3 rounded-sm bg-green-400"></span>
+                    <span class="w-3 h-3 rounded-sm bg-green-600"></span>
+                    <span class="w-3 h-3 rounded-sm bg-green-800"></span>
+                    <span>More</span>
+                </div>
+            </div>
+        </div>
+    </div>
+
     <!-- My Recipes Section -->
     <div class="mb-8">
         <div class="flex items-center justify-between mb-6">

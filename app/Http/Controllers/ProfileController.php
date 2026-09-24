@@ -7,6 +7,7 @@ use App\Models\User;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Redirect;
 use Illuminate\Support\Facades\Storage;
@@ -22,6 +23,7 @@ class ProfileController extends Controller
     {
         $user = $request->user();
         $recipes = $user->recipes()->latest()->paginate(12);
+        $contributions = $this->contributionsFor($user);
         $stats = [
             'total_recipes' => $user->recipes()->count(),
             'total_likes' => $user->recipes()->sum('like_count'),
@@ -31,7 +33,46 @@ class ProfileController extends Controller
             'following' => $user->following()->count(),
         ];
 
-        return view('profile.dashboard', compact('user', 'recipes', 'stats'));
+        return view('profile.dashboard', compact('user', 'recipes', 'stats', 'contributions'));
+    }
+
+    /**
+     * Build daily activity for the contribution graph.
+     */
+    private function contributionsFor(User $user): array
+    {
+        $start = now()->subMonths(11)->startOfMonth()->startOfWeek();
+        $end = now()->endOfDay();
+        $counts = [];
+
+        foreach ([$user->recipes(), $user->comments(), $user->ratings()] as $activity) {
+            foreach ($activity->whereBetween('created_at', [$start, $end])->get(['created_at']) as $item) {
+                $day = $item->created_at->toDateString();
+                $counts[$day] = ($counts[$day] ?? 0) + 1;
+            }
+        }
+
+        foreach (DB::table('likes')->where('user_id', $user->id)->whereBetween('created_at', [$start, $end])->pluck('created_at') as $createdAt) {
+            $day = \Illuminate\Support\Carbon::parse($createdAt)->toDateString();
+            $counts[$day] = ($counts[$day] ?? 0) + 1;
+        }
+
+        $weeks = [];
+        for ($week = $start->copy(); $week <= $end; $week->addWeek()) {
+            $days = [];
+            for ($day = $week->copy(); $day < $week->copy()->addDays(7); $day->addDay()) {
+                $date = $day->toDateString();
+                $count = $counts[$date] ?? 0;
+                $days[] = [
+                    'date' => $date,
+                    'count' => $count,
+                    'level' => $count === 0 ? 0 : min(4, (int) ceil($count / 2)),
+                ];
+            }
+            $weeks[] = $days;
+        }
+
+        return $weeks;
     }
 
     /**
