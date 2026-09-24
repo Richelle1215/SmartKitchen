@@ -174,7 +174,7 @@ class ProfileController extends Controller
 
         // Store new profile picture
         $path = $request->file('profile_picture')->store('profile_pictures', 'public');
-        
+
         $user->update(['profile_picture' => $path]);
 
         return back()->with('status', 'profile-picture-updated');
