@@ -23,3 +23,4 @@ class RecipeCollectionFactory extends Factory
         ];
     }
 }
+//recipe collection factory
